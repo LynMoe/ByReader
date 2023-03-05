@@ -1,0 +1,36 @@
+{
+  "name": "byreader",
+  "version": "1.0.0",
+  "description": "Another comic reader",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "NODE_ENV=dev node src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LynMoe/ByReader.git"
+  },
+  "author": "Lyn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LynMoe/ByReader/issues"
+  },
+  "homepage": "https://github.com/LynMoe/ByReader#readme",
+  "dependencies": {
+    "@koa/cors": "^4.0.0",
+    "aes-js": "^3.1.2",
+    "axios": "^1.3.4",
+    "crypto-js": "^4.1.1",
+    "koa": "^2.14.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-cookie": "^1.0.0",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^12.0.0",
+    "nedb": "^1.8.0",
+    "node-cache": "^5.1.2",
+    "node-html-parser": "^6.1.5",
+    "sharp": "^0.31.3",
+    "validator": "^13.9.0",
+    "winston": "^3.8.2"
+  }
+}

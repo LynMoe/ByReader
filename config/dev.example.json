@@ -1,0 +1,27 @@
+{
+  "system": {
+    "key": "thisisakey",
+    "db": {
+      "type": "nedb",
+      "path": "config",
+      "nedb": {
+        "autocompactionInterval": 1800000
+      }
+    },
+    "cache": {
+      "type": "NodeCache",
+      "path": "cache",
+      "NodeCache": {
+        "stdTTL": 600,
+        "checkperiod": 300,
+        "maxKeys": 1000
+      }
+    },
+    "koa": {
+      "port": 3000
+    },
+    "image": {
+      "quality": 90
+    }
+  }
+}
