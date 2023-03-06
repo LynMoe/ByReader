@@ -61,7 +61,8 @@ async function getComicInfo(_comicId) {
   result.data.cover = `${site}:${result.data.cover}`
   result.createTime = Date.now()
 
-  comic ? await db.update('comic', { comicId }, result) : await db.insert('comic', result)
+  // comic ? await db.update('comic', { comicId }, result) : await db.insert('comic', result)
+  // TODO
 
   return result
 }

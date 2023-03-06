@@ -15,7 +15,7 @@ const dbPath = path.resolve(__dirname, '../../', config('system.db.path'))
 const collectionList = {
   user: {
     db: null,
-    indexFields: ['combindedId'],
+    indexFields: ['combinedId'],
   },
   comic: {
     db: null,
@@ -23,7 +23,7 @@ const collectionList = {
   },
   bookshelf: {
     db: null,
-    indexFields: ['combindedId'],
+    indexFields: ['combinedId'],
   },
 }
 

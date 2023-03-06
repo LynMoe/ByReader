@@ -19,7 +19,6 @@ async function checkOrCreateUser(email, passcode) {
     })
   } else {
     if (user.passcode !== passcode) throw new Error('Passcode not match')
-    return
   }
 
   return combinedId

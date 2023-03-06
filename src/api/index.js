@@ -20,7 +20,8 @@ app.use(koaLogger({
 }))
 
 app.use(async (ctx, next) => {
-  const combinedId = ctx.cookies.get('combinedId')
+  // const combinedId = ctx.cookies.get('combinedId')
+  const combinedId = ctx.headers['x-combined-id']
 
   if (combinedId) {
     if (cache.get(combinedId)) {
