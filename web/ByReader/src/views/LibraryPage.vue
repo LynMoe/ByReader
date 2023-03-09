@@ -38,6 +38,7 @@ import LibraryList from '@/components/LibraryList.vue'
 
 import { store, state } from '@/util/store'
 import { fetch } from '@/util/fetch'
+import { getImageLink } from '@/util/image'
 
 import { defineComponent } from 'vue'
 
@@ -82,10 +83,10 @@ export default defineComponent({
         method: 'GET',
       }).then((res: any) => {
         res = res.result.map((item: any) => {
-          item.data = {
-            ...item.data,
-            cover: item.data.cover.replace('copymanga:', ''),
-          }
+          // item.data = {
+          //   ...item.data,
+          //   cover: getImageLink(item.data.cover),
+          // }
           return item.data
         })
 
@@ -103,22 +104,14 @@ export default defineComponent({
         return fetch('/user/bookshelf', {
           method: 'GET',
         }).then(res => res.result.comicIds).then(res => this.getBatchComicInfo(res)).then(res => {
-          this.itemList = res
           store.libraryItems = res
+          if (this.segmentValue === 'fav') {
+            this.itemList = res
+          }
         })
       } else if (this.segmentValue === 'history') {
-        // return fetch('/user/history', {
-        //   method: 'GET',
-        // }).then((res: any) => {
-        //   this.itemList = this.itemList.concat(res.result.data)
-        // })
-        const history = store.historyIds
+        // const history = store.historyIds
         this.itemList = store.historyItems
-
-        return this.getBatchComicInfo(history).then(res => {
-          this.itemList = res
-          store.historyItems = res
-        })
       }
 
       return Promise.resolve()

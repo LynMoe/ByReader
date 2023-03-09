@@ -68,8 +68,9 @@ export default defineComponent({
   },
   beforeMount() {
     fetch('/comic/site').then((res) => {
-        this.itemList = res.result
-      })
+      console.log(res)
+      this.itemList = res.result
+    })
   },
 });
 </script>

@@ -3,7 +3,9 @@
     <ion-header class="header">
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-buttons slot="start">
+            <ion-button @click="this.$router.go(-1)"><IonIcon :icon="arrowBack"></IonIcon></ion-button>
+          </ion-buttons>
         </ion-buttons>
         <ion-title>{{ chapterItem.name }}</ion-title>
       </ion-toolbar>
@@ -15,7 +17,10 @@
           <ion-row>
             <ion-range :pin="true" :pin-formatter="pinFormatter"
             :ticks="true" :snaps="true" :min="1" :max="imageNum" :value="this.imageIndex + 1"
-            @ion-knob-move-end="onRangeValueChange"></ion-range>
+            @ion-change="onRangeValueChange"
+            @ion-knob-move-start="e => this.rangeTouch = true"
+            @ion-knob-move-end="e => this.rangeTouch = false"
+            ></ion-range>
           </ion-row>
           <ion-row>
             <ion-col size="3">
@@ -44,7 +49,9 @@
 
 import { defineComponent } from 'vue'
 
-import { IonPage, IonRange, IonHeader, IonFooter, IonTitle, IonToolbar, IonBackButton, IonButton, IonButtons, IonRow, IonCol, IonGrid } from '@ionic/vue'
+import { IonIcon, IonPage, IonRange, IonHeader, IonFooter, IonTitle, IonToolbar, IonBackButton, IonButton, IonButtons, IonRow, IonCol, IonGrid } from '@ionic/vue'
+
+import { arrowBack } from 'ionicons/icons'
 
 import ReaderControlChapterList from './ReaderControlChapterList.vue'
 
@@ -52,6 +59,11 @@ import { store, state } from '@/util/store'
 
 export default defineComponent({
   name: 'ReaderControl',
+  setup() {
+    return {
+      arrowBack,
+    }
+  },
   props: [
     'chapterIndex',
     'chapterList',
@@ -75,8 +87,8 @@ export default defineComponent({
     IonCol,
     IonRange,
     ReaderControlChapterList,
-    IonBackButton,
     IonPage,
+    IonIcon,
   },
   computed: {
     chapterItem () {
@@ -111,6 +123,7 @@ export default defineComponent({
   data: () => {
     return {
       isOpen: false,
+      rangeTouch: false,
     }
   },
   methods: {
@@ -118,6 +131,7 @@ export default defineComponent({
       return `${value} / ${this.imageNum}`
     },
     onRangeValueChange(event) {
+      if (!this.rangeTouch) return
       console.log('rangeValueChange', event)
       const value = event.detail.value
       console.log('rangeValueChange', value)

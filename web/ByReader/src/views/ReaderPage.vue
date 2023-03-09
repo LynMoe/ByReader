@@ -2,17 +2,19 @@
   <ion-page>
     <div v-show="!showControl">
       <ReaderOverlay
+      v-if="ready"
       :chapter-index="chapterIndex" :chapter-list="chapterList"
       :image-index="imageIndex" :chapter-list-image-list="chapterListImageList"></ReaderOverlay>
     </div>
 
     <div v-show="showControl">
       <ReaderControl
+      v-if="ready"
       v-model:chapter-index="chapterIndex" :chapter-list="chapterList"
       v-model:image-index="imageIndex" :chapter-list-image-list="chapterListImageList"></ReaderControl>
     </div>
 
-    <ReaderModeVertical v-model:image-index="imageIndex" v-model:chapter-index="chapterIndex" 
+    <ReaderModeVertical @ready-change="e => this.ready = true" v-model:image-index="imageIndex" v-model:chapter-index="chapterIndex" 
     :chapter-list="chapterList" :chapter-list-image-list="chapterListImageList"
     :get-chapter-image="getChapterImage" @toggle-control="onToggleControl"></ReaderModeVertical>
   </ion-page>
@@ -58,6 +60,7 @@ export default defineComponent({
     imageIndex: 0,
     loadStatus: 'idle', // idle, loaded,
     showControl: false,
+    ready: false,
   }),
   methods: {
     getChapterImage(chapterId) {

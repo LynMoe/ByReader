@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue'
 
 export const store = reactive({
-  apiBase: 'http://10.37.96.23:3000',
+  apiBase: 'http://127.0.0.1:3000',
   libraryItems: [],
   historyIds: [],
   historyItems: [],
@@ -18,7 +18,7 @@ export const store = reactive({
           [0, 0, 0.7, 0.3],
         ],
         right: [
-          [0.3, 0, 1, 1],
+          [0.7, 0, 1, 1],
           [0.3, 0.7, 1, 1],
         ],
         middle: [
@@ -29,7 +29,7 @@ export const store = reactive({
   },
   user: {
     email: '',
-    combindedId: '',
+    combinedId: '',
   },
   breakpoint: {
     320: {
@@ -55,4 +55,12 @@ export const state = reactive({
     chapterIndex: 0,
   },
   comicList: {},
+  isLogin: null,
 })
+
+const localStore = localStorage && localStorage.getItem('store')
+if (localStore) {
+  Object.assign(store, JSON.parse(localStore))
+} else {
+  localStorage.setItem('store', JSON.stringify(store))
+}

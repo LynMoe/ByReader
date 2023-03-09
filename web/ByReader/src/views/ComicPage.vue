@@ -15,7 +15,7 @@
       <ion-grid>
         <ion-row>
           <ion-col size="4">
-            <img style="width: 100%" :src="comic.cover" />
+            <img style="width: 100%" :src="getImageLink(comic.cover)" />
           </ion-col>
           <ion-col size="8">
             <div>
@@ -75,6 +75,7 @@ import { useRoute } from 'vue-router'
 
 import { fetch } from '@/util/fetch'
 import { state, store } from '@/util/store'
+import { getImageLink } from '@/util/image'
 
 export default defineComponent({
   setup() {
@@ -86,6 +87,7 @@ export default defineComponent({
       heartDislikeOutline,
       bookOutline,
       comicId,
+      getImageLink,
     }
   },
   components: {
@@ -139,18 +141,25 @@ export default defineComponent({
       this.$router.push('/reader')
     },
   },
-  beforeMount() {
+  async beforeMount() {
     if (!state.comicList[this.comicId]) {
       // TODO: fetch data
+      this.comic = await fetch('/comic/comic?comicId=' + this.comicId, {
+        method: 'GET',
+      }).then((res: any) => {
+        return res.result.data
+      })
+      state.comicList[this.comicId] = this.comic
+      console.log(this.comic)
     } else {
       this.comic = state.comicList[this.comicId]
     }
     console.log(state.comicList)
 
-    if (store.historyIds.includes(this.comicId)) {
-      store.historyIds = store.historyIds.filter(i => i != this.comicId)
+    if (store.historyItems.find(i => i.id == this.comicId)) {
+      store.historyItems = store.historyItems.filter(i => i.id !== this.comicId)
     }
-    store.historyIds.unshift(this.comicId)
+    store.historyItems.unshift(this.comic)
 
     this.bundle = [{
       id: '0',

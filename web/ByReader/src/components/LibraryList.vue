@@ -2,7 +2,7 @@
   <Waterfall :list="itemList" :width="width" imgSelector="cover" :delay="150" :breakpoints="breakpoint">
     <template #item="{ item }">
       <ion-card @click="onComicClick(item)">
-        <LazyImg alt="{{ item.name }}" :url="item.cover" />
+        <LazyImg alt="{{ item.name }}" :url="getImageLink(item.cover)" />
         <ion-card-header>
           <ion-card-title>{{ item.name }}</ion-card-title>
           <ion-card-subtitle v-if="item.alias.length !== 0">{{ item.alias.join(', ') }}</ion-card-subtitle>
@@ -28,11 +28,18 @@ import { store, state } from '@/util/store'
 
 import { useIonRouter } from '@ionic/vue'
 
+import { getImageLink } from '@/util/image'
+
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 
 export default defineComponent({
   name: 'LibraryPage',
+  setup() {
+    return {
+      getImageLink,
+    }
+  },
   props: [
     'itemList',
   ],

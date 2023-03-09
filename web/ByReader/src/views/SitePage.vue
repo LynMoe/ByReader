@@ -25,7 +25,7 @@
 import { IonButton, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel } from '@ionic/vue'
 import { defineComponent, ref } from 'vue'
 
-import SiteSetting from './SiteSetting.vue'
+import SiteSetting from '@/components/SiteSetting.vue'
 import SiteList from '@/components/SiteList.vue'
 
 export default defineComponent({
@@ -38,6 +38,7 @@ export default defineComponent({
     IonContent,
     // IonButton,
     SiteList,
+    SiteSetting,
 },
   data: () => ({
     settingSiteId: '',

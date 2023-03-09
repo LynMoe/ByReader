@@ -6,9 +6,9 @@
     addSlidesBefore: 3,
   }" @tap="onTap" @slideChange="slideChange" @afterInit="s => swiperRef = s">
     <swiper-slide v-for="slideContent in slides" :key="slideContent.url" :virtualIndex="slideContent.url">
-      <div class="imgWarpper" style="height: 100%">
+      <div class="imgWarpper" style="height: 100%;">
         <div class="swiper-zoom-container" style="height: 100%">
-          <img :src="slideContent.url.replace('copymanga:', '')" />
+          <img :src="getImageLink(slideContent.url)" />
         </div>
       </div>
     </swiper-slide>
@@ -22,7 +22,7 @@
 <script lang="ts">
 
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination, Virtual, Navigation, FreeMode, Zoom } from 'swiper'
+import { Pagination, Virtual, FreeMode, Zoom } from 'swiper'
 
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -30,6 +30,8 @@ import 'swiper/css/navigation'
 import 'swiper/css/virtual'
 
 import { IonPage, IonContent, IonList, IonImg } from '@ionic/vue'
+
+import { getImageLink } from '@/util/image'
 
 import { defineComponent, ref } from 'vue'
 
@@ -49,6 +51,7 @@ export default defineComponent({
     'update:chapterIndex',
     'update:imageIndex',
     'toggleControl',
+    'readyChange',
   ],
   components: {
     Swiper,
@@ -58,6 +61,7 @@ export default defineComponent({
   setup() {
     return {
       modules: [Virtual, FreeMode, Zoom],
+      getImageLink,
     }
   },
   data() {
@@ -72,6 +76,7 @@ export default defineComponent({
       activeSlideStartIndex: 0,
       oldChapterIndex: -1,
       ready: false,
+      tapTimeoutId: null,
     }
   },
   watch: {
@@ -151,7 +156,16 @@ export default defineComponent({
           this.next()
           break
         case 'middle':
-          this.$emit('toggleControl')
+          if (this.tapTimeoutId) {
+            clearTimeout(this.tapTimeoutId)
+            this.tapTimeoutId = null
+            // this.$emit('toggleControl')
+          } else {
+            this.tapTimeoutId = setTimeout(() => {
+              this.$emit('toggleControl')
+              this.tapTimeoutId = null
+            }, 200)
+          }
           break
         default:
           break
@@ -215,6 +229,7 @@ export default defineComponent({
           }
         }).then(() => {
           this.ready = true
+          this.$emit('readyChange', true)
         }).then(() => {
           if (this.chapterIndex > 0) {
             console.log('chapterIndex > 0', this.chapterIndex)
@@ -244,7 +259,7 @@ export default defineComponent({
 
 }
 
-.imgWarpper {
+.swiper-zoom-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -263,8 +278,8 @@ export default defineComponent({
 
 .swiper-slide img {
   display: block;
-  /* width: 100%; */
-  height: 100%;
+  max-width: 100%;
+  max-block-size: 100%;
   object-fit: cover;
 }
 </style>

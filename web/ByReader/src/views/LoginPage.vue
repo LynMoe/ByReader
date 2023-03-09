@@ -35,7 +35,7 @@ import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonInput
 
 import { defineComponent } from 'vue'
 
-import { store } from '@/util/store'
+import { store, state } from '@/util/store'
 
 import { fetch } from '@/util/fetch'
 
@@ -67,7 +67,7 @@ export default defineComponent({
       }).then(res => {
         console.log(res)
         if (res && res.result && res.result.length === 64) {
-          store.user.combindedId = res.result
+          store.user.combinedId = res.result
           store.user.email = this.email
 
           toastController.create({
@@ -78,6 +78,7 @@ export default defineComponent({
             toast.present()
           })
 
+          state.isLogin = true
           this.$router.push('/library')
         } else {
           toastController.create({

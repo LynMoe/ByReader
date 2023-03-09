@@ -68,6 +68,7 @@ import {
   IonToggle,
   IonSelect,
   IonSelectOption,
+  IonInput,
 } from '@ionic/vue'
 import { defineComponent } from 'vue'
 
@@ -96,6 +97,7 @@ export default defineComponent({
     IonToggle,
     IonSelect,
     IonSelectOption,
+    IonInput,
   },
   data() {
     return {
