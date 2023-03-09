@@ -7,7 +7,7 @@ const router = new koaRouter({
   prefix: '/user',
 })
 
-router.post('/getCombindedId', async (ctx, next) => {
+router.post('/getCombinedId', async (ctx, next) => {
   console.log(ctx.request.body)
   const { email, passcode } = ctx.request.body
   if (!email || !passcode) {

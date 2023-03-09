@@ -35,12 +35,12 @@ function getSiteList() {
   })
 }
 
-async function searchComic(site, keyword = '', page = 1) {
-  checkSite(site)
+async function searchComic(siteId, keyword = '', page = 1) {
+  checkSite(siteId)
 
-  let result = await siteList[site].searchComic(keyword, page)
+  let result = await siteList[siteId].searchComic(keyword, page)
   result.list = result.list.map(item => {
-    item.id = `${site}:${item.id}`
+    item.id = `${siteId}:${item.id}`
     return item
   })
 

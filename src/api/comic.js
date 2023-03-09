@@ -18,9 +18,9 @@ router.get('/site', async (ctx, next) => {
 })
 
 router.get('/search', async (ctx, next) => {
-  const { site, keyword, page } = ctx.query
+  const { siteId, keyword, page } = ctx.query
 
-  if (!site || !keyword || !page) {
+  if (!siteId || !keyword || !page) {
     ctx.body = {
       code: 400,
       message: 'Missing required parameters',
@@ -29,7 +29,7 @@ router.get('/search', async (ctx, next) => {
   }
   
   try {
-    const result = await comic.searchComic(site, keyword, page)
+    const result = await comic.searchComic(siteId, keyword, page)
     ctx.body = {
       code: 200,
       message: 'Success',
@@ -46,9 +46,9 @@ router.get('/search', async (ctx, next) => {
 })
 
 router.get('/comic', async (ctx, next) => {
-  const { comicId } = ctx.query
+  let { comicId, comicIds } = ctx.query
 
-  if (!comicId) {
+  if ((!comicId || !comicIds) && (!comicId && !comicIds)) {
     ctx.body = {
       code: 400,
       message: 'Missing required parameters',
@@ -57,7 +57,15 @@ router.get('/comic', async (ctx, next) => {
   }
   
   try {
-    const result = await comic.getComicInfo(comicId)
+    let result
+
+    if (comicIds) {
+      comicIds = `${comicIds}`.split(',').map(i => i.trim())
+      result = await Promise.all(comicIds.map((comicId) => comic.getComicInfo(comicId)))
+    } else {
+      result = await comic.getComicInfo(comicId)
+    }
+
     ctx.body = {
       code: 200,
       message: 'Success',
