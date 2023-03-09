@@ -66,6 +66,11 @@ export default defineComponent({
     segmentValue: 'fav',
     itemList: [],
   }),
+  computed: {
+    historyIds() {
+      return store.historyIds
+    },
+  },
   methods: {
     segmentChanged(event: any) {
       console.log(event.detail.value)
@@ -121,6 +126,9 @@ export default defineComponent({
   },
   watch: {
     segmentValue() {
+      this.getData()
+    },
+    historyIds() {
       this.getData()
     },
   },

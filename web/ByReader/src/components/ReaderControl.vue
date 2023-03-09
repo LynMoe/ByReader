@@ -1,5 +1,5 @@
 <template>
-  <div class="readerControl">
+  <IonPage class="readerControl">
     <ion-header class="header">
       <ion-toolbar>
         <ion-buttons slot="start">
@@ -34,7 +34,7 @@
         </ion-grid>
       </ion-toolbar>
     </ion-footer>
-  </div>
+  </IonPage>
 
   <ReaderControlChapterList v-model:is-open="isOpen" v-model:chapter-index="selfChapterIndex"
   :chapter-list="chapterList"></ReaderControlChapterList>
@@ -44,7 +44,7 @@
 
 import { defineComponent } from 'vue'
 
-import { IonRange, IonHeader, IonFooter, IonTitle, IonToolbar, IonBackButton, IonButton, IonButtons, IonRow, IonCol, IonGrid } from '@ionic/vue'
+import { IonPage, IonRange, IonHeader, IonFooter, IonTitle, IonToolbar, IonBackButton, IonButton, IonButtons, IonRow, IonCol, IonGrid } from '@ionic/vue'
 
 import ReaderControlChapterList from './ReaderControlChapterList.vue'
 
@@ -76,6 +76,7 @@ export default defineComponent({
     IonRange,
     ReaderControlChapterList,
     IonBackButton,
+    IonPage,
   },
   computed: {
     chapterItem () {

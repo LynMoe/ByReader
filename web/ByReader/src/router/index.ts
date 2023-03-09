@@ -8,10 +8,6 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/LoginPage.vue'),
   },
   {
-    path: '/reader',
-    component: () => import('@/views/ReaderPage.vue'),
-  },
-  {
     path: '/',
     component: TabsPage,
     children: [
@@ -39,6 +35,10 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'setting',
         component: () => import('@/views/SettingPage.vue')
+      },
+      {
+        path: 'reader',
+        component: () => import('@/views/ReaderPage.vue'),
       },
     ],
   },

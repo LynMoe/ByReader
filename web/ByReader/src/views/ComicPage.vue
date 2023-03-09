@@ -147,6 +147,11 @@ export default defineComponent({
     }
     console.log(state.comicList)
 
+    if (store.historyIds.includes(this.comicId)) {
+      store.historyIds = store.historyIds.filter(i => i != this.comicId)
+    }
+    store.historyIds.unshift(this.comicId)
+
     this.bundle = [{
       id: '0',
       name: 'All',
