@@ -41,6 +41,7 @@ async function searchComic(siteId, keyword = '', page = 1) {
   let result = await siteList[siteId].searchComic(keyword, page)
   result.list = result.list.map(item => {
     item.id = `${siteId}:${item.id}`
+    item.cover = `${siteId}:${item.cover}`
     return item
   })
 
