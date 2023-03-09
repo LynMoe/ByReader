@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue'
 
 export const store = reactive({
-  apiBase: 'http://127.0.0.1:3000',
+  apiBase: 'http://10.37.96.23:3000',
   libraryItems: [],
   historyIds: [],
   historyItems: [],
@@ -14,15 +14,15 @@ export const store = reactive({
       mode: 'vertical',
       touchZone: {
         left: [
-          [0, 0, 0.2, 1],
-          [0, 0, 0.8, 0.2],
+          [0, 0, 0.3, 1],
+          [0, 0, 0.7, 0.3],
         ],
         right: [
-          [0.8, 0, 1, 1],
-          [0.2, 0.8, 1, 1],
+          [0.3, 0, 1, 1],
+          [0.3, 0.7, 1, 1],
         ],
         middle: [
-          [0.2, 0.2, 0.8, 0.8],
+          [0.3, 0.3, 0.7, 0.7],
         ],
       },
     },

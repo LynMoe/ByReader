@@ -1,5 +1,5 @@
 <template>
-  <ion-modal ref="modal" :is-open="isOpen" :initial-breakpoint="0.25" :breakpoints="[0, 0.25, 0.5, 0.75]">
+  <ion-modal ref="modal" :is-open="isOpen" :initial-breakpoint="0.55" :breakpoints="[0, 0.5, 1]">
     <ion-content class="ion-padding">
       <!-- <ion-searchbar @click="$refs.modal.$el.setCurrentBreakpoint(0.75)" placeholder="Search"></ion-searchbar> -->
       <ion-list>

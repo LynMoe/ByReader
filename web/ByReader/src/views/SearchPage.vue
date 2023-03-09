@@ -8,7 +8,7 @@
         <ion-title>Search</ion-title>
       </ion-toolbar>
       <ion-toolbar>
-        <ion-searchbar :value="searchValue" @ion-change="onSearchInput" :animated="true" placeholder="Search"></ion-searchbar>
+        <ion-searchbar :value="''" @ion-change="onSearchInput" :animated="true" placeholder="Search"></ion-searchbar>
       </ion-toolbar>
     </ion-header>
 
@@ -59,7 +59,7 @@
     data: () => ({
       segmentValue: 'all',
       siteList: [],
-      searchValue: '姐',
+      searchValue: '',
       timeoutId: 0,
       siteSearchResult: {},
       sitePage: {},
@@ -103,6 +103,9 @@
         })
       },
       async getData(siteId = '') {
+        if (this.searchValue === '') {
+          return
+        }
         console.log('search', this.searchValue)
 
         if (this.siteList.length === 0) {

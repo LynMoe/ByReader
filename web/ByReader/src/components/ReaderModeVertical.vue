@@ -1,11 +1,15 @@
 <template>
-  <swiper v-if="ready" :modules="modules" :space-between="0" :zoom="true" :free-mode="false" :virtual="{
+  <swiper v-if="ready" :modules="modules" :space-between="0" :zoom="{
+    maxRatio: 2,
+  }" :free-mode="false" :virtual="{
     addSlidesAfter: 3,
     addSlidesBefore: 3,
   }" @tap="onTap" @slideChange="slideChange" @afterInit="s => swiperRef = s">
     <swiper-slide v-for="slideContent in slides" :key="slideContent.url" :virtualIndex="slideContent.url">
       <div class="imgWarpper" style="height: 100%">
-        <img style="height: auto;" :src="slideContent.url.replace('copymanga:', '')" />
+        <div class="swiper-zoom-container" style="height: 100%">
+          <img :src="slideContent.url.replace('copymanga:', '')" />
+        </div>
       </div>
     </swiper-slide>
   </swiper>
