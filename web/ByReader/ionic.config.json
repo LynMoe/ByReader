@@ -1,0 +1,7 @@
+{
+  "name": "ByReader",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
