@@ -14,9 +14,9 @@
       v-model:image-index="imageIndex" :chapter-list-image-list="chapterListImageList"></ReaderControl>
     </div>
 
-    <ReaderModeVertical @ready-change="e => this.ready = true" v-model:image-index="imageIndex" v-model:chapter-index="chapterIndex" 
+    <ReaderModeHorizontal @ready-change="e => this.ready = true" v-model:image-index="imageIndex" v-model:chapter-index="chapterIndex" 
     :chapter-list="chapterList" :chapter-list-image-list="chapterListImageList"
-    :get-chapter-image="getChapterImage" @toggle-control="onToggleControl"></ReaderModeVertical>
+    :get-chapter-image="getChapterImage" @toggle-control="onToggleControl"></ReaderModeHorizontal>
   </ion-page>
 </template>
 
@@ -25,7 +25,7 @@ import { toastController, IonPage } from '@ionic/vue'
 
 import ReaderControl from '@/components/ReaderControl.vue'
 import ReaderOverlay from '@/components/ReaderOverlay.vue'
-import ReaderModeVertical from '@/components/ReaderModeVertical.vue'
+import ReaderModeHorizontal from '@/components/ReaderModeHorizontal.vue'
 
 import { defineComponent } from 'vue'
 import { fetch } from '@/util/fetch'
@@ -36,7 +36,7 @@ export default defineComponent({
   name: 'ReaderPage',
   components: {
     IonPage,
-    ReaderModeVertical,
+    ReaderModeHorizontal,
     ReaderControl,
     ReaderOverlay,
   },

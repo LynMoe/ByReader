@@ -34,7 +34,21 @@
 </template>
 
 <script lang="ts">
-  import { IonBackButton, IonButtons, IonPage, IonHeader, IonSearchbar, IonTitle, IonToolbar, IonContent, IonSegment, IonSegmentButton, IonLabel } from '@ionic/vue'
+  import {
+    IonBackButton,
+    IonButtons,
+    IonPage,
+    IonHeader,
+    IonSearchbar,
+    IonTitle,
+    IonToolbar,
+    IonContent,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+  } from '@ionic/vue'
   import { defineComponent } from 'vue'
 
   import { fetch } from '@/util/fetch'
@@ -55,6 +69,8 @@
       IonPage,
       IonBackButton,
       IonButtons,
+      IonInfiniteScroll,
+      IonInfiniteScrollContent,
     },
     data: () => ({
       segmentValue: 'all',

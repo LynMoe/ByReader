@@ -24,10 +24,10 @@
 </template>
 
 <script lang="ts">
-import { IonLabel, IonItem, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonInput, IonList, IonSelect, IonSelectOption } from '@ionic/vue'
-import { defineComponent, reactive } from 'vue'
+import { IonLabel, IonItem, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonInput, IonList, IonSelect, IonSelectOption } from '@ionic/vue'
+import { defineComponent } from 'vue'
 
-import { bookOutline, planetOutline } from 'ionicons/icons';
+import { planetOutline } from 'ionicons/icons';
 
 import { store } from '@/util/store'
 
@@ -63,43 +63,43 @@ export default defineComponent({
           }
         ],
       },
-      {
-        name: 'Reader',
-        description: 'Reader settings',
-        icon: bookOutline,
-        child: [
-          {
-            name: 'Mode',
-            description: 'Reader mode',
-            type: 'select',
-            options: [
-              {
-                name: 'Vertical',
-                value: 'vertical',
-              },
-              {
-                name: 'Horizontal',
-                value: 'horizontal',
-              },
-            ],
-          },
-          {
-            name: 'Direction',
-            description: 'Reader direction',
-            type: 'select',
-            options: [
-              {
-                name: 'Left to right',
-                value: 'ltr',
-              },
-              {
-                name: 'Right to left',
-                value: 'rtl',
-              },
-            ],
-          }
-        ],
-      }
+      // {
+      //   name: 'Reader',
+      //   description: 'Reader settings',
+      //   icon: bookOutline,
+      //   child: [
+      //     {
+      //       name: 'Mode',
+      //       description: 'Reader mode',
+      //       type: 'select',
+      //       options: [
+      //         {
+      //           name: 'Vertical',
+      //           value: 'vertical',
+      //         },
+      //         {
+      //           name: 'Horizontal',
+      //           value: 'horizontal',
+      //         },
+      //       ],
+      //     },
+      //     {
+      //       name: 'Direction',
+      //       description: 'Reader direction',
+      //       type: 'select',
+      //       options: [
+      //         {
+      //           name: 'Left to right',
+      //           value: 'ltr',
+      //         },
+      //         {
+      //           name: 'Right to left',
+      //           value: 'rtl',
+      //         },
+      //       ],
+      //     }
+      //   ],
+      // }
     ],
   }),
   methods: {

@@ -39,7 +39,7 @@ import { getZone } from '@/util/zone'
 import { store, state } from '@/util/store'
 
 export default defineComponent({
-  name: 'ReaderModeVertical',
+  name: 'ReaderModeHorizontal',
   props: [
     'chapterIndex',
     'imageIndex',
