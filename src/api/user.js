@@ -84,6 +84,27 @@ router.post('/bookshelf', async (ctx, next) => {
   await next()
 })
 
+router.get('/bookshelf/progress', async (ctx, next) => {
+  const { comicId } = ctx.query
+  if (!comicId) {
+    ctx.body = {
+      code: 400,
+      message: 'Missing required parameters',
+    }
+    return
+  }
+
+  const result = await user.getReadingProgress(ctx.state.combinedId, comicId)
+
+  ctx.body = {
+    code: 200,
+    message: 'Success',
+    result: result,
+  }
+
+  await next()
+})
+
 router.post('/bookshelf/progress', async (ctx, next) => {
   const { comicId, chapterId } = ctx.request.body
   if (!comicId || !chapterId) {

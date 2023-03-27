@@ -1,9 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const sharp = require('sharp')
-const crypto = require('crypto')
 
-const cache = require('../cache')
+const cache = require('../util/fileCache')
 const comic = require('./comic')
 const config = require('../util/config')
 
@@ -18,18 +17,20 @@ async function compressImage(image, format, quality = config('system.image.quali
   return buffer
 }
 
-async function getImage(_url, format, quality = config('system.image.quality')) {
-  // let key = crypto.createHash('sha256').update(JSON.stringify(`${site}:${url}:${url}`)).digest('hex')
-  // let image
-  // if (cache.get(key)) {
-  //   image = fs.readFileSync()
-  // }
+async function getImage(_url, format) {
+  let image
+  if (config('system.fileCache.enable', false)) {
+    image = await cache.getCacheFile(_url)
+  }
 
-  let image = await comic.getImage(_url)
+  if (!image) {
+    image = await comic.getImage(_url)
+    if (config('system.fileCache.enable', false)) {
+      await cache.cacheFile(_url, image)
+    }
+  }
 
-  // TODO: cache image
-
-  return await compressImage(image, format, quality)
+  return await compressImage(image, format)
 }
 
 module.exports = {

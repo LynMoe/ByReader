@@ -170,7 +170,6 @@ async function getChapterList(comicId) {
       accept: '*/*',
       referer: `${site.url}comic/${comicId}`,
     },
-
   }
 
   const res = await retry(async () => {
@@ -180,7 +179,7 @@ async function getChapterList(comicId) {
     if (data.code !== 200) throw new error.SiteError(`Get chapter list failed: ${data.message}`)
 
     // key xxxmanga.woo.key
-    // iv the first 16 bytes of result 
+    // iv is the first 16 bytes of the result 
     data = crypto.decrypt(data.results.slice(16), 'xxxmanga.woo.key', data.results.slice(0, 16))
     data = JSON.parse(JSON.parse(JSON.stringify(data)))
 

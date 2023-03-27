@@ -154,11 +154,14 @@ router.get('/image', async (ctx, next) => {
   } else if (ctx.accepts('image/webp')) {
     accept = 'image/webp'
   }
-  let imageBuffer = await image.getImage(url, accept.replace('image/', ''))
+  
   try {
-    // let imageBuffer = await comic.getImage(site, url)
+    let imageBuffer = await image.getImage(url, accept.replace('image/', ''))
     
     ctx.set('Content-Type', accept)
+    ctx.set('Cache-Control', 'max-age=31536000')
+    ctx.set('Expires', new Date(Date.now() + 31536000000).toUTCString())
+    
     ctx.body = imageBuffer
   } catch (e) {
     ctx.body = {

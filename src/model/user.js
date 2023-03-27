@@ -91,8 +91,22 @@ async function setReadingProgress(combinedId, comicId, chapterId) {
   }
 
   const progress = bookshelf.progress || {}
-    progress[comicId] = chapterId
-    return await db.update('bookshelf', { combinedId }, { progress })
+  if (!progress[comicId]) progress[comicId] = []
+  if (!progress[comicId].includes(chapterId)) {
+    progress[comicId].push(chapterId)
+  }
+
+  return await db.update('bookshelf', { combinedId }, { progress })
+}
+
+async function getReadingProgress(combinedId, comicId) {
+  const bookshelf = await db.query('bookshelf', { combinedId }, {
+    findOne: true,
+  })
+  if (!bookshelf) return []
+
+  const progress = bookshelf.progress || {}
+  return progress[comicId] || []
 }
 
 module.exports = {
@@ -103,4 +117,5 @@ module.exports = {
   addBookToBookshelf,
   removeBookFromBookshelf,
   setReadingProgress,
+  getReadingProgress,
 }
