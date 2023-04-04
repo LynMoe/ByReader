@@ -41,21 +41,29 @@ async function getUserInfo(combinedId) {
 async function getUserBookshelf(combinedId) {
   return await db.query('bookshelf', { combinedId }, {
     findOne: true,
-  }) || []
+  }) || {
+    combinedId,
+    comicIds: {},
+    progress: {},
+  }
 }
 
-async function addBookToBookshelf(combinedId, comicId) {
+async function addBookToBookshelf(combinedId, bookshelfName, comicId) {
   const bookshelf = await db.query('bookshelf', { combinedId }, {
     findOne: true,
   })
   if (!bookshelf) {
+    const comicIds = {}
+    comicIds[bookshelfName] = [comicId]
+
     return await db.insert('bookshelf', {
       combinedId,
-      comicIds: [comicId],
+      comicIds,
       progress: {},
     })
   } else {
-    const comicIds = bookshelf.comicIds
+    if (!bookshelf.comicIds[bookshelfName]) bookshelf.comicIds[bookshelfName] = []
+    const comicIds = bookshelf.comicIds[bookshelfName]
     if (!comicIds.includes(comicId)) {
       comicIds.push(comicId)
       return await db.update('bookshelf', { combinedId }, { comicIds })
@@ -63,15 +71,18 @@ async function addBookToBookshelf(combinedId, comicId) {
   }
 }
 
-async function removeBookFromBookshelf(combinedId, comicId) {
+async function removeBookFromBookshelf(combinedId, bookshelfName, comicId) {  
   const bookshelf = await db.query('bookshelf', { combinedId }, {
     findOne: true,
   })
-  if (!bookshelf) return
+  if (!bookshelf || !bookshelf.comicIds[bookshelfName]) return
 
-  const comicIds = bookshelf.comicIds
+  const comicIds = bookshelf.comicIds[bookshelfName]
   if (comicIds.includes(comicId)) {
     comicIds.splice(comicIds.indexOf(comicId), 1)
+    if (comicIds.length === 0) {
+      delete bookshelf.comicIds[bookshelfName]
+    }
     return await db.update('bookshelf', { combinedId }, { comicIds })
   }
 }
@@ -83,7 +94,7 @@ async function setReadingProgress(combinedId, comicId, chapterId) {
   if (!bookshelf) {
     bookshelf = {
       combinedId,
-      comicIds: [],
+      comicIds: {},
       progress: {},
     }
 
