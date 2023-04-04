@@ -18,7 +18,7 @@ class Nedb {
         return data
       },
     })
-    this._db.persistence.setAutocompactionInterval(config('system.db.nedb.autocompactionInterval', 1000 * 60 * 30))
+    this._db.persistence.setAutocompactionInterval(config('db.nedb.autocompactionInterval', 1000 * 60 * 30))
 
     if (options.indexFields) {
       for (const field of options.indexFields) {

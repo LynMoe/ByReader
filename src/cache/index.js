@@ -5,9 +5,9 @@ const cacheType = {
   NodeCache,
 }
 
-const configType = config('system.cache.type')
+const configType = config('cache.type')
 
 if (!cacheType[configType]) throw new Error(`Cache provider ${configType} not found`)
-const cache = new cacheType[configType](config(`system.cache.${configType}`))
+const cache = new cacheType[configType](config(`cache.${configType}`))
 
 module.exports = cache

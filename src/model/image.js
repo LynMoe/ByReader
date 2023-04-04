@@ -6,9 +6,9 @@ const cache = require('../util/fileCache')
 const comic = require('./comic')
 const config = require('../util/config')
 
-const cachePath = path.resolve(__dirname, '../../', config('system.cache.path'))
+const cachePath = path.resolve(__dirname, '../../', config('cache.path'))
 
-async function compressImage(image, format, quality = config('system.image.quality')) {
+async function compressImage(image, format, quality = config('image.quality')) {
   fs.writeFileSync(path.resolve(cachePath, 'test.jpg'), image)
   const buffer = await sharp(Buffer.from(image))
     .toFormat(format, { quality })
@@ -19,13 +19,13 @@ async function compressImage(image, format, quality = config('system.image.quali
 
 async function getImage(_url, format) {
   let image
-  if (config('system.fileCache.enable', false)) {
+  if (config('fileCache.enable', false)) {
     image = await cache.getCacheFile(_url)
   }
 
   if (!image) {
     image = await comic.getImage(_url)
-    if (config('system.fileCache.enable', false)) {
+    if (config('fileCache.enable', false)) {
       await cache.cacheFile(_url, image)
     }
   }

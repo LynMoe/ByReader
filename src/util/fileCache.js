@@ -7,9 +7,9 @@ const config = require('../util/config')
 
 class FileCache {
   constructor() {
-    this.maxSize = config('system.fileCache.maxSize', 1024) * 1024 * 1024 // MB
-    this.maxFileSize = config('system.fileCache.maxFileSize', 10) * 1024 * 1024 // MB
-    this.cachePath = path.resolve(__dirname, '../../', config('system.fileCache.path', 'cache'))
+    this.maxSize = config('fileCache.maxSize', 1024) * 1024 * 1024 // MB
+    this.maxFileSize = config('fileCache.maxFileSize', 10) * 1024 * 1024 // MB
+    this.cachePath = path.resolve(__dirname, '../../', config('fileCache.path', 'cache'))
     this.cache = new Map()
     this.currentSize = 0
 

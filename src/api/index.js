@@ -55,5 +55,5 @@ app.use(async (ctx, next) => {
 app.use(require('./user'))
 app.use(require('./comic'))
 
-app.listen(config('system.koa.port'))
-logger.info(`Koa server listening on port ${config('system.koa.port')}`)
+app.listen(config('koa.port'))
+logger.info(`Koa server listening on port ${config('koa.port')}`)

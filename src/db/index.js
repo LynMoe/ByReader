@@ -8,9 +8,9 @@ const dbList = {
   nedb,
 }
 
-const dbType = config('system.db.type')
+const dbType = config('db.type')
 if (!dbList[dbType]) throw new Error(`DB type ${dbType} not found`)
-const dbPath = path.resolve(__dirname, '../../', config('system.db.path'))
+const dbPath = path.resolve(__dirname, '../../', config('db.path'))
 
 const collectionList = {
   user: {
