@@ -4,6 +4,7 @@ const config = require('./../util/config')
 const comic = require('../model/comic')
 const image = require('../model/image')
 const { comicQueue } = require('./../util/queue')
+const { comicCache } = require('./../util/cache')
 
 async function queueRequest(fn, err, finallyFn) {
   comicQueue.push(function(cb) {
@@ -51,7 +52,15 @@ router.get('/search', async (ctx, next) => {
   }
 
   queueRequest(async () => {
-    const result = await comic.searchComic(siteId, keyword, page)
+    let result
+    const key = encodeURIComponent(`search-${siteId}-${keyword}-${page}`)
+    if (comicCache.has(key)) {
+      result = comicCache.get(key)
+    } else {
+      result = await comic.searchComic(siteId, keyword, page)
+      comicCache.set(key, result)
+    }
+
     ctx.body = {
       code: 200,
       message: 'Success',
@@ -81,9 +90,25 @@ router.get('/comic', async (ctx, next) => {
 
     if (comicIds) {
       comicIds = `${comicIds}`.split(',').map(i => i.trim())
-      result = await Promise.all(comicIds.map((comicId) => comic.getComicInfo(comicId)))
+      result = await Promise.all(comicIds.map(async (comicId) => {
+        const key = encodeURIComponent(`comic-${comicId}`)
+        if (comicCache.has(key)) {
+          return Promise.resolve(comicCache.get(key))
+        }
+
+        return comic.getComicInfo(comicId).then((result) => {
+          comicCache.set(key, result)
+          return result
+        })
+      }))
     } else {
-      result = await comic.getComicInfo(comicId)
+      const key = encodeURIComponent(`comic-${comicId}`)
+      if (comicCache.has(key)) {
+        result = comicCache.get(key)
+      } else {
+        result = await comic.getComicInfo(comicId)
+        comicCache.set(key, result)
+      }
     }
 
     ctx.body = {
@@ -111,7 +136,15 @@ router.get('/chapter', async (ctx, next) => {
   }
 
   queueRequest(async () => {
-    const result = await comic.getChapterList(comicId)
+    const key = encodeURIComponent(`chapter-${comicId}`)
+    let result
+    if (comicCache.has(key)) {
+      result = comicCache.get(key)
+    } else {
+      result = await comic.getChapterList(comicId)
+      comicCache.set(key, result)
+    }
+
     ctx.body = {
       code: 200,
       message: 'Success',
@@ -137,7 +170,15 @@ router.get('/chapter/detail', async (ctx, next) => {
   }
 
   queueRequest(async () => {
-    const result = await comic.getChapterDetail(comicId, chapterId)
+    const key = encodeURIComponent(`chapter-detail-${comicId}-${chapterId}`)
+    let result
+    if (comicCache.has(key)) {
+      result = comicCache.get(key)
+    } else {
+      result = await comic.getChapterDetail(comicId, chapterId)
+      comicCache.set(key, result)
+    }
+
     ctx.body = {
       code: 200,
       message: 'Success',
@@ -170,7 +211,7 @@ router.get('/image', async (ctx, next) => {
   }
 
   queueRequest(async () => {
-    let imageBuffer = await image.getImage(url, accept.replace('image/', ''))
+    let imageBuffer = await image.getImage(url, accept.replace('image/', '')) // Cached inside
     
     ctx.set('Content-Type', accept)
     ctx.set('Cache-Control', 'max-age=31536000')
