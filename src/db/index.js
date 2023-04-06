@@ -17,10 +17,6 @@ const collectionList = {
     db: null,
     indexFields: ['combinedId'],
   },
-  comic: {
-    db: null,
-    indexFields: ['id'],
-  },
   bookshelf: {
     db: null,
     indexFields: ['combinedId'],

@@ -51,11 +51,6 @@ async function searchComic(siteId, keyword = '', page = 1) {
 async function getComicInfo(_comicId) {
   const [site, comicId] = checkSite(_comicId)
 
-  let comic = await db.query('comic', { comicId })
-  if (comic = comic[0] && Date.now() - comic.createTime < 1000 * 60 * 60 * 24 * 3) {
-    return comic
-  }
-
   let result = await siteList[site].getComicInfo(comicId)
 
   result.data.id = `${site}:${result.data.id}`
