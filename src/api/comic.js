@@ -1,7 +1,29 @@
 const koaRouter = require('koa-router')
 const validator = require('validator')
+const config = require('./../util/config')
 const comic = require('../model/comic')
 const image = require('../model/image')
+const { comicQueue } = require('./../util/queue')
+
+async function queueRequest(fn, err, finallyFn) {
+  comicQueue.push(function(cb) {
+    return Promise.race([
+      fn(),
+      new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timeout'))
+        }, config('queue.comic.timeout', 10000))
+      })
+    ]).then((result) => {
+      cb(null, result)
+    }).catch((e) => {
+      err(e)
+      cb(e)
+    }).finally(() => {
+      finallyFn()
+    })
+  })
+}
 
 const router = new koaRouter({
   prefix: '/comic',
@@ -27,22 +49,20 @@ router.get('/search', async (ctx, next) => {
     }
     return
   }
-  
-  try {
+
+  queueRequest(async () => {
     const result = await comic.searchComic(siteId, keyword, page)
     ctx.body = {
       code: 200,
       message: 'Success',
       result: result,
     }
-  } catch (e) {
+  }, (e) => {
     ctx.body = {
       code: 500,
       message: e.message,
     }
-  }
-
-  await next()
+  }, next)
 })
 
 router.get('/comic', async (ctx, next) => {
@@ -55,8 +75,8 @@ router.get('/comic', async (ctx, next) => {
     }
     return
   }
-  
-  try {
+
+  queueRequest(async () => {
     let result
 
     if (comicIds) {
@@ -71,14 +91,12 @@ router.get('/comic', async (ctx, next) => {
       message: 'Success',
       result: result,
     }
-  } catch (e) {
+  }, (e) => {
     ctx.body = {
       code: 500,
       message: e.message,
     }
-  }
-
-  await next()
+  }, next)
 })
 
 router.get('/chapter', async (ctx, next) => {
@@ -91,22 +109,20 @@ router.get('/chapter', async (ctx, next) => {
     }
     return
   }
-  
-  try {
+
+  queueRequest(async () => {
     const result = await comic.getChapterList(comicId)
     ctx.body = {
       code: 200,
       message: 'Success',
       result: result,
     }
-  } catch (e) {
+  }, (e) => {
     ctx.body = {
       code: 500,
       message: e.message,
     }
-  }
-  
-  await next()
+  }, next)
 })
 
 router.get('/chapter/detail', async (ctx, next) => {
@@ -120,21 +136,19 @@ router.get('/chapter/detail', async (ctx, next) => {
     return
   }
 
-  try {
+  queueRequest(async () => {
     const result = await comic.getChapterDetail(comicId, chapterId)
     ctx.body = {
       code: 200,
       message: 'Success',
       result: result,
     }
-  } catch (e) {
+  }, (e) => {
     ctx.body = {
       code: 500,
       message: e.message,
     }
-  }
-
-  await next()
+  }, next)
 })
 
 router.get('/image', async (ctx, next) => {
@@ -154,8 +168,8 @@ router.get('/image', async (ctx, next) => {
   } else if (ctx.accepts('image/webp')) {
     accept = 'image/webp'
   }
-  
-  try {
+
+  queueRequest(async () => {
     let imageBuffer = await image.getImage(url, accept.replace('image/', ''))
     
     ctx.set('Content-Type', accept)
@@ -163,14 +177,12 @@ router.get('/image', async (ctx, next) => {
     ctx.set('Expires', new Date(Date.now() + 31536000000).toUTCString())
     
     ctx.body = imageBuffer
-  } catch (e) {
+  }, (e) => {
     ctx.body = {
       code: 500,
       message: e.message,
     }
-  }
-
-  await next()
+  }, next)
 })
 
 module.exports = router.routes()
