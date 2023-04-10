@@ -54,8 +54,8 @@ router.get('/bookshelf', async (ctx, next) => {
 })
 
 router.post('/bookshelf', async (ctx, next) => {
-  const { operation, comicId } = ctx.request.body
-  if (!operation || !comicId || (operation !== 'add' && operation !== 'remove')) {
+  const { operation, bookshelfName, comicId } = ctx.request.body
+  if (!operation || !bookshelfName || !comicId || (operation !== 'add' && operation !== 'remove')) {
     ctx.body = {
       code: 400,
       message: 'Missing required parameters',
@@ -65,9 +65,9 @@ router.post('/bookshelf', async (ctx, next) => {
 
   try {
     if (operation === 'add') {
-      await user.addBookToBookshelf(ctx.state.combinedId, comicId)
+      await user.addBookToBookshelf(ctx.state.combinedId, bookshelfName, comicId)
     } else {
-      await user.removeBookFromBookshelf(ctx.state.combinedId, comicId)
+      await user.removeBookFromBookshelf(ctx.state.combinedId, bookshelfName, comicId)
     }
 
     ctx.body = {
