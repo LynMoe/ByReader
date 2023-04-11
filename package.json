@@ -33,6 +33,7 @@
     "queue": "^6.0.2",
     "sharp": "^0.31.3",
     "validator": "^13.9.0",
+    "vue-load-image": "^1.1.0",
     "winston": "^3.8.2"
   }
 }

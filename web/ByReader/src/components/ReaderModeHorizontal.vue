@@ -2,13 +2,21 @@
   <swiper v-if="ready" :modules="modules" :space-between="0" :zoom="{
     maxRatio: 2,
   }" :free-mode="false" :virtual="{
-    addSlidesAfter: 3,
+    addSlidesAfter: 8, // preload 8 slides after
     addSlidesBefore: 3,
   }" @tap="onTap" @slideChange="slideChange" @afterInit="s => swiperRef = s">
     <swiper-slide v-for="slideContent in slides" :key="slideContent.url" :virtualIndex="slideContent.url">
       <div class="imgWarpper" style="height: 100%;">
         <div class="swiper-zoom-container" style="height: 100%">
-          <img :src="getImageLink(slideContent.url)" />
+          <VueLoadImage>
+            <template v-slot:image>
+              <img :src="getImageLink(slideContent.url)"/>
+            </template>
+            <template v-slot:preloader> 
+              <ion-spinner></ion-spinner>
+            </template>
+            <template v-slot:error>Image load fails</template>
+          </VueLoadImage>
         </div>
       </div>
     </swiper-slide>
@@ -22,14 +30,16 @@
 <script lang="ts">
 
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Pagination, Virtual, FreeMode, Zoom } from 'swiper'
+import { Virtual, FreeMode, Zoom } from 'swiper'
 
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 import 'swiper/css/virtual'
 
-import { IonPage, IonContent, IonList, IonImg } from '@ionic/vue'
+import VueLoadImage from 'vue-load-image'
+
+import { IonPage, IonContent, IonList, IonImg, IonSpinner } from '@ionic/vue'
 
 import { getImageLink } from '@/util/image'
 
@@ -56,6 +66,8 @@ export default defineComponent({
   components: {
     Swiper,
     SwiperSlide,
+    VueLoadImage,
+    IonSpinner,
     // IonImg,
   },
   setup() {
