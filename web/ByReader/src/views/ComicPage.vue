@@ -6,9 +6,9 @@
           <ion-back-button></ion-back-button>
         </ion-buttons>
         <ion-title>Comic</ion-title>
-        <ion-buttons slot="end">
-          <ion-button>Download</ion-button> <!-- TODO: download icon -->
-        </ion-buttons>
+        <!-- <ion-buttons slot="end">
+          <ion-button>Download</ion-button>
+        </ion-buttons> -->
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
@@ -30,9 +30,15 @@
       <ion-grid>
         <ion-row>
           <ion-col size="6">
-            <ion-button color="secondary" expand="block">
-              <ion-icon slot="start" :icon="heartOutline"></ion-icon>
-              Like
+            <ion-button :color="inBookshelfList.length > 0 ? 'medium' : 'danger'" expand="block" @click="onOpenLikePannel">
+              <div v-if="inBookshelfList.length > 0">
+                <ion-icon slot="start" :icon="heartOutline"></ion-icon>
+                Like
+              </div>
+              <div v-else>
+                <ion-icon slot="start" :icon="heartDislikeOutline"></ion-icon>
+                Unlike
+              </div>
             </ion-button>
           </ion-col>
           <ion-col size="6">
@@ -62,6 +68,7 @@
         </div>
       </div>
     </ion-content>
+    <ComicBookshelfSelector v-model:is-open="openBookehelfSelector" v-model:in-bookshelf-list="inBookshelfList"></ComicBookshelfSelector>
   </ion-page>
 </template>
 
@@ -69,7 +76,9 @@
 import { IonPage, IonSegment, IonSegmentButton } from '@ionic/vue'
 import { IonIcon, IonLabel, IonItem, IonButtons, IonButton, IonBackButton, IonHeader, IonToolbar, IonContent, IonTitle, IonCol, IonGrid, IonRow } from '@ionic/vue'
 import { defineComponent } from 'vue'
-import { heartOutline, heartDislikeOutline, bookOutline } from 'ionicons/icons'
+import { heartOutline, heartDislikeOutline, heartDislikeCircleOutline, bookOutline } from 'ionicons/icons'
+
+import ComicBookshelfSelector from '@/components/ComicBookshelfSelector.vue'
 
 import { useRoute } from 'vue-router'
 
@@ -107,6 +116,7 @@ export default defineComponent({
     IonItem,
     IonIcon,
     IonBackButton,
+    ComicBookshelfSelector,
   },
   computed: {
     listChapterList() {
@@ -118,7 +128,7 @@ export default defineComponent({
       }
     },
     filteredChapterList() {
-      return this.listChapterList.filter(i => this.segmentValue == '0' || i.type == this.segmentValue)
+      return this.listChapterList.filter(i => this.segmentValue == '-1' || i.type == this.segmentValue)
     },
   },
   data() {
@@ -127,6 +137,8 @@ export default defineComponent({
       bundle: [],
       segmentValue: 'default',
       comic: {},
+      inBookshelfList: [],
+      openBookehelfSelector: false,
     }
   },
   methods: {
@@ -139,6 +151,43 @@ export default defineComponent({
       state.reader.chapterIndex = chapterIndex
 
       this.$router.push('/reader')
+    },
+    onOpenLikePannel() {
+      this.openBookehelfSelector = false
+      this.$nextTick(() => {
+        this.openBookehelfSelector = true
+      })
+    },
+  },
+  watch: {
+    inBookshelfList(newVal, oldVal) {
+      // detect addition and removal and post to backend
+      const added = newVal.filter(i => !oldVal.includes(i))
+      const removed = oldVal.filter(i => !newVal.includes(i))
+
+      for (const item of added) {
+        console.log('add', item)
+        fetch('/comic/bookshelf', {
+          method: 'POST',
+          body: JSON.stringify({
+            operation: 'add',
+            bookshelfName: item,
+            comicId: this.comicId,
+          }),
+        })
+      }
+
+      for (const item of removed) {
+        console.log('remove', item)
+        fetch('/comic/bookshelf', {
+          method: 'POST',
+          body: JSON.stringify({
+            operation: 'remove',
+            bookshelfName: item,
+            comicId: this.comicId,
+          }),
+        })
+      }
     },
   },
   async beforeMount() {
@@ -162,7 +211,7 @@ export default defineComponent({
     store.historyItems.unshift(this.comic)
 
     this.bundle = [{
-      id: '0',
+      id: '-1',
       name: 'All',
     }]
     this.segmentValue = this.bundle[0].id
@@ -179,6 +228,16 @@ export default defineComponent({
       this.chapterList = res.result.list
       this.bundle = this.bundle.concat(res.result.bundle.filter(i => presented.has(i.id)))
     })
+
+    // get bookshelf list
+    this.inBookshelfList = []
+    for (const bookshelfName in store.bookshelfList) {
+      const bs = store.bookshelfList[bookshelfName]
+      if (this.comicId in bs) {
+        this.inBookshelfList.push(bookshelfName)
+      }
+    }
+
   },
 })
 </script>

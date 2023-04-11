@@ -6,6 +6,7 @@ export const store = reactive({
   historyIds: [],
   historyItems: [],
   site: [],
+  bookshelfList: {},
   setting: {
     comic: {
       sort: 'asc',

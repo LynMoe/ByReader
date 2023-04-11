@@ -17,11 +17,8 @@
 
       <div class="warpper">
         <ion-segment @ion-change="segmentChanged" :value="segmentValue">
-          <ion-segment-button value="fav">
-            <ion-label>Favorite</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="history">
-            <ion-label>History</ion-label>
+          <ion-segment-button v-for="item in this.segmentList" :key="item" :value="item">
+            <ion-label>{{ item }}</ion-label>
           </ion-segment-button>
         </ion-segment>
         <LibraryList :item-list="itemList" />
@@ -64,14 +61,10 @@ export default defineComponent({
     IonIcon,
   },
   data: () => ({
-    segmentValue: 'fav',
+    segmentValue: '',
+    segmentList: [],
     itemList: [],
   }),
-  computed: {
-    historyIds() {
-      return store.historyIds
-    },
-  },
   methods: {
     segmentChanged(event: any) {
       console.log(event.detail.value)
@@ -98,35 +91,31 @@ export default defineComponent({
     getData() {
       console.log('getData', this.segmentValue)
 
-      if (this.segmentValue === 'fav') {
-        this.itemList = store.libraryItems
-
-        return fetch('/user/bookshelf', {
+      return fetch('/user/bookshelf', {
           method: 'GET',
-        }).then(res => res.result.comicIds).then(res => this.getBatchComicInfo(res)).then(res => {
-          store.libraryItems = res
-          if (this.segmentValue === 'fav') {
-            this.itemList = res
+        }).then(res => res.result.comicIds)
+        .then(res => {
+          this.segmentList = Object.keys(res)
+          if (!this.segmentList.includes(this.segmentValue)) {
+            this.segmentValue = this.segmentList[0]
           }
-        })
-      } else if (this.segmentValue === 'history') {
-        // const history = store.historyIds
-        this.itemList = store.historyItems
-      }
+          store.bookshelfList = res
 
-      return Promise.resolve()
+          res = res[this.segmentValue]
+          return res
+        })
+        .then(res => this.getBatchComicInfo(res)).then(res => {
+          this.itemList = res
+        })
     },
   },
   watch: {
-    segmentValue() {
-      this.getData()
+    segmentValue: {
+      handler() {
+        this.getData()
+      },
+      immediate: true,
     },
-    historyIds() {
-      this.getData()
-    },
-  },
-  beforeMount() {
-    this.getData()
   },
 })
 </script>

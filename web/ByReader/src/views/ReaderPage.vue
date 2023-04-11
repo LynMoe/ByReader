@@ -62,6 +62,21 @@ export default defineComponent({
     showControl: false,
     ready: false,
   }),
+  watch: {
+    nowChapter (value) {
+      console.log('set reading progress', value, this.comic)
+      return fetch(`/user/bookshelf/progress`, {
+        method: 'POST',
+        body: {
+          comicId: this.comic.id,
+          chapterId: value.id,
+        },
+      })
+        .then((res: any) => {
+          console.log('set reading progress', res)
+        })
+    },
+  },
   methods: {
     getChapterImage(chapterId) {
       if (this.chapterListImageList[chapterId]) return Promise.resolve()
