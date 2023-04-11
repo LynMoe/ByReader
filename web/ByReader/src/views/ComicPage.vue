@@ -42,7 +42,7 @@
             </ion-button>
           </ion-col>
           <ion-col size="6">
-            <ion-button @click="onStartReading(0)" color="success" expand="block">
+            <ion-button @click="onStartReading(chapterIndexProgress.length > 0 ? chapterIndexProgress[chapterIndexProgress.length - 1] : 0)" color="success" expand="block">
               <ion-icon slot="start" :icon="bookOutline"></ion-icon>
               Continue
             </ion-button>
@@ -139,6 +139,7 @@ export default defineComponent({
       comic: {},
       inBookshelfList: [],
       openBookehelfSelector: false,
+      chapterIndexProgress: [],
     }
   },
   methods: {
@@ -225,8 +226,21 @@ export default defineComponent({
         presented.add(item.type)
       })
 
+      // this is from newest to oldest(top to bottom)
       this.chapterList = res.result.list
       this.bundle = this.bundle.concat(res.result.bundle.filter(i => presented.has(i.id)))
+
+      fetch(`/user/bookshelf/progress?comicId=${encodeURIComponent(this.comicId)}`, {
+        method: 'GET',
+      }).then((res) => {
+        const progress = res.result
+        for (const chapterIndex in this.chapterList) {
+          const chapter = this.chapterList[chapterIndex]
+          if (chapter.id in progress) {
+            this.chapterIndexProgress.push(chapterIndex)
+          }
+        }
+      })
     })
 
     // get bookshelf list
