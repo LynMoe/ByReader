@@ -1,7 +1,7 @@
 # ByReader
 Yet another PWA comic reader.
 
-![ByReader](https://raw.githubusercontent.com/ByRead/ByReader/master/doc/img/byreader.jpeg)
+![ByReader](https://raw.githubusercontent.com/LynMoe/ByReader/master/doc/img/byreader.jpeg)
 
 ## Features
 - [x] 看漫画
