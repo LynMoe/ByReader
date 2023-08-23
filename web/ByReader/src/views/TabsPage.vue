@@ -1,8 +1,8 @@
 <template>
   <ion-page>
-    <ion-tabs>
+    <!-- <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
-      <ion-tab-bar v-if="!this.$route.path.startsWith('/reader')" slot="bottom">
+      <ion-tab-bar v-if="!$route.path.startsWith('/reader')" slot="bottom">
         <ion-tab-button tab="tab1" href="/library">
           <ion-icon aria-hidden="true" :icon="libraryOutline" />
           <ion-label>Library</ion-label>
@@ -18,7 +18,7 @@
           <ion-label>Setting</ion-label>
         </ion-tab-button>
       </ion-tab-bar>
-    </ion-tabs>
+    </ion-tabs> -->
   </ion-page>
 </template>
 

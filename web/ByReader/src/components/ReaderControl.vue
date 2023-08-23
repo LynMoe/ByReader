@@ -13,30 +13,12 @@
     
     <ion-footer class="footer">
       <ion-toolbar>
-        <ion-grid>
-          <ion-row>
-            <ion-range :pin="true" :pin-formatter="pinFormatter"
+        <ion-range style="margin: 8px 24px"
             :ticks="true" :snaps="true" :min="1" :max="imageNum" :value="this.imageIndex + 1"
             @ion-change="onRangeValueChange"
             @ion-knob-move-start="e => this.rangeTouch = true"
             @ion-knob-move-end="e => this.rangeTouch = false"
             ></ion-range>
-          </ion-row>
-          <ion-row>
-            <ion-col size="3">
-              <ion-button @click="onChapterListClick" expand="block" fill="outline">Chapters</ion-button>
-            </ion-col>
-            <ion-col size="3">
-              <ion-button expand="block" fill="outline">Outline</ion-button>
-            </ion-col>
-            <ion-col size="3">
-              <ion-button expand="block" fill="outline">Outline</ion-button>
-            </ion-col>
-            <ion-col size="3">
-              <ion-button expand="block" fill="outline">Outline</ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
       </ion-toolbar>
     </ion-footer>
   </IonPage>
@@ -82,9 +64,8 @@ export default defineComponent({
     IonHeader,
     IonButton,
     IonButtons,
-    IonGrid,
-    IonRow,
-    IonCol,
+    // IonGrid,
+    // IonRow,
     IonRange,
     ReaderControlChapterList,
     IonPage,
@@ -153,7 +134,7 @@ export default defineComponent({
   position: fixed;
   height: 100vh;
   width: 100vw;
-  z-index: 999;
+  z-index: 2002;
   
   background: rgba(0, 0, 0, 0.3);
   pointer-events: none;

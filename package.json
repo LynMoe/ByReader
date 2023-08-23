@@ -1,6 +1,6 @@
 {
   "name": "byreader",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Another comic reader",
   "main": "src/app.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "koa-cookie": "^1.0.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^12.0.0",
+    "mongodb": "^5.7.0",
     "nedb": "^1.8.0",
     "node-cache": "^5.1.2",
     "node-html-parser": "^6.1.5",

@@ -5,10 +5,10 @@ import { store } from '@/util/store'
 // const router = useIonRouter()
 
 export const fetch = async (url: string, options?: object) => {
-  url = store.apiBase + url
+  url = '/api' + url
   options = {
     headers: {
-      'x-combined-id': store.user.combinedId,
+      'x-token': store.user.token,
     },
     ...options,
   }

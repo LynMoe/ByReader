@@ -15,12 +15,12 @@
       <div class="loginForm">
         <ion-list>
           <ion-item>
-            <ion-label position="floating">Email</ion-label>
-            <ion-input type="email" v-model="email"></ion-input>
+            <ion-label position="floating">Username</ion-label>
+            <ion-input type="text" v-model="username"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label position="floating">Passcode</ion-label>
-            <ion-input type="password" v-model="passcode"></ion-input>
+            <ion-label position="floating">Password</ion-label>
+            <ion-input type="password" v-model="password"></ion-input>
           </ion-item>
         </ion-list>
         <ion-button expand="block" @click="login">Login</ion-button>
@@ -52,23 +52,23 @@ export default defineComponent({
     IonLabel,
   },
   data: () => ({
-    email: '',
-    passcode: '',
+    username: '',
+    password: '',
   }),
   methods: {
     login() {
       console.log(this.email, this.passcode)
-      fetch('/user/getCombinedId', {
+      fetch('/user/login', {
         method: 'POST',
         data: {
-          email: this.email,
-          passcode: this.passcode
+          username: this.username,
+          password: this.password
         },
       }).then(res => {
         console.log(res)
-        if (res && res.result && res.result.length === 64) {
-          store.user.combinedId = res.result
-          store.user.email = this.email
+        if (res && res.result && res.result.length === 32) {
+          store.user.token = res.result
+          store.user.username = this.username
 
           toastController.create({
             message: 'Login success!',

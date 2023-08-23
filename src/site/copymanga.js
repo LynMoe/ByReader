@@ -1,5 +1,4 @@
 const fetch = require('./../util/fetch')
-const cache = require('./../cache')
 const retry = require('./../util/retry')
 const crypto = require('./../util/crypto')
 const error = require('./../util/error')
@@ -121,7 +120,7 @@ async function searchComic(keyword = '', page = 1) {
           }
         }),
       ],
-      cover: `${item.cover}`.replace('.328x422.jpg', ''),
+      cover: `${item.cover}`, //.replace('.328x422.jpg', ''),
       tag: [...item.females, ...item.males], // To be confirmed
       description: '', // TODO
     })
@@ -232,7 +231,7 @@ async function getChapterDetail(comicId, chapterId) {
 
   for (const item of res) {
     result.list.push({
-      url: `${item.url}`.replace('.webp', '.jpg').replace('c800x', 'c1200x'),
+      url: `${item.url}`.replace('.webp', '.jpg'), //.replace('c800x', 'c1200x'),
     })
   }
 

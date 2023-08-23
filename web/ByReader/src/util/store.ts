@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue'
 
 export const store = reactive({
-  apiBase: 'http://127.0.0.1:3000',
+  apiBase: '/api/',
   libraryItems: [],
   historyIds: [],
   historyItems: [],
@@ -29,8 +29,8 @@ export const store = reactive({
     },
   },
   user: {
-    email: '',
-    combinedId: '',
+    username: '',
+    token: '',
   },
   breakpoint: {
     320: {
@@ -51,9 +51,15 @@ export const store = reactive({
 
 export const state = reactive({
   reader: {
-    comic: {},
+    comic: {
+      id: null,
+      name: null,
+      cover: null,
+      description: null,
+    },
     chapterList: [],
     chapterIndex: 0,
+    hasRead: {},
   },
   comicList: {},
   isLogin: null,

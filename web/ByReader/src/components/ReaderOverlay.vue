@@ -1,8 +1,6 @@
 <template>
-  <div class="readerOverlay">
-    <div class="status">
-      <span>{{ chapterItem.name }} | {{ chapterIndex + 1 }}/{{ chapterNum }} | {{ imageIndex + 1 }}/{{ imageNum }}</span>
-    </div>
+  <div class="status">
+    <span>{{ chapterItem.name }} | {{ chapterIndex + 1 }}/{{ chapterNum }} | {{ imageIndex + 1 }}/{{ imageNum }}</span>
   </div>
 </template>
 
@@ -21,13 +19,13 @@ export default defineComponent({
     'chapterListImageList',
   ],
   computed: {
-    chapterItem () {
+    chapterItem() {
       return this.chapterList[this.chapterIndex] || {}
     },
-    chapterNum () {
+    chapterNum() {
       return this.chapterList.length
     },
-    imageNum () {
+    imageNum() {
       if (!this.chapterListImageList[this.chapterItem.id]) return 0
       return this.chapterListImageList[this.chapterItem.id].length
     },
@@ -45,28 +43,28 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.readerOverlay {
-  position: fixed;
-  height: 100vh;
-  width: 100vw;
-  z-index: 999;
-  
-  /* background: rgba(0, 0, 0, 0.3); */
-  pointer-events: none;
+@supports(padding: max(0px)) {
+  .status {
+    top: max(0, env(safe-area-inset-top));
+  }
 }
-
 .status {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 160px;
-  height: 30px;
-  display: flex;
+  position: relative;
+  display: inline-block;
+  top: env(safe-area-inset-top);
+  /* top: 16px;
+  left: 16px; */
+  /* margin-left: 0px; */
+  padding: 0 8px;
+  /* width: 160px; */
+  /* height: 30px; */
+  /* display: flex;
   flex-direction: column;
-  align-items: left;
+  align-items: flex-start; */
   color: white;
   background-color: black;
   font-size: small;
   line-height: 30px;
+  z-index: 2001;
 }
 </style>

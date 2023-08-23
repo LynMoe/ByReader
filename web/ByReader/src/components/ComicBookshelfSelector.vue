@@ -4,8 +4,15 @@
       <!-- <ion-searchbar @click="$refs.modal.$el.setCurrentBreakpoint(0.75)" placeholder="Search"></ion-searchbar> -->
       <ion-list>
         <ion-item v-for="(item, index) in bookshelfList" :key="index">
-          <ion-label>{{ item }}</ion-label>
-          <ion-toggle :value="inBookshelfList.includes(item)" @ionChange="toggleInBookshelf(index)" slot="end"></ion-toggle>
+          <ion-label>{{ index }}</ion-label>
+          <ion-toggle :checked="inBookshelfList.includes(index)" @ionChange="toggleInBookshelf(index)" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item>
+          <ion-input placeholder="New bookshelf" @ionChange="i => this.newBookshelfValue = i.target.value"></ion-input>
+          <ion-button slot="end" @click="onNewBookshelf">
+            <ion-icon :icon="addCircleOutline" slot="end"></ion-icon>
+            Add
+          </ion-button>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -13,7 +20,8 @@
 </template>
 
 <script lang="ts">
-import { IonLabel, IonItem, IonModal, IonContent, IonList, IonToggle } from '@ionic/vue'
+import { IonLabel, IonItem, IonModal, IonContent, IonList, IonToggle, IonInput, IonButton, IonIcon } from '@ionic/vue'
+import { addCircleOutline } from 'ionicons/icons'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -25,7 +33,13 @@ export default defineComponent({
   emits: [
     'update:isOpen',
     'update:inBookshelfList',
+    'toggleBookshelf',
   ],
+  setup() {
+    return {
+      addCircleOutline,
+    }
+  },
   components: {
     IonModal,
     IonContent,
@@ -33,22 +47,27 @@ export default defineComponent({
     IonItem,
     IonList,
     IonToggle,
-    // IonIcon,
+    IonInput,
+    IonButton,
+    IonIcon,
   },
+  data: () => ({
+    newBookshelfValue: '',
+  }),
   methods: {
     setOpen(isOpen: boolean) {
-      this.$emit('update:isOpen', isOpen)
+      // this.$emit('update:isOpen', !isOpen)
+      this.$nextTick(() => {
+        this.$emit('update:isOpen', isOpen)
+      })
     },
-    toggleInBookshelf(index: number) {
-      const bookshelf = this.bookshelfList[index]
-      const inBookshelf = this.inBookshelfList.find((item) => item.id === bookshelf.id)
-      const list = this.inBookshelfList
-      if (inBookshelf) {
-        list.splice(this.inBookshelfList.indexOf(inBookshelf), 1)
-      } else {
-        list.push(bookshelf)
-      }
-      this.$emit('update:inBookshelfList', list)
+    toggleInBookshelf(bsName) {
+      this.$emit('toggleBookshelf', [bsName, !this.inBookshelfList.includes(bsName)])
+    },
+    onNewBookshelf(e) {
+      console.log(e)
+      this.toggleInBookshelf(this.newBookshelfValue)
+      this.setOpen(false)
     },
   },
 })

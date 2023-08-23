@@ -7,7 +7,7 @@ const koaLogger = require('koa-logger')
 const bodyParser = require('koa-bodyparser')
 const cookie = require('koa-cookie').default
 
-const cache = require('./../cache')
+const cache = require('./../cache')('api-index')
 const user = require('./../model/user')
 
 app.use(cors())
@@ -21,24 +21,29 @@ app.use(koaLogger({
 
 app.use(async (ctx, next) => {
   // const combinedId = ctx.cookies.get('combinedId')
-  let combinedId = ctx.headers['x-combined-id']
-  if (!combinedId) {
-    combinedId = ctx.query.combinedId
+  let token = ctx.headers['x-token']
+  if (!token) {
+    token = ctx.query.token
   }
 
-  if (combinedId) {
-    if (cache.get(combinedId)) {
-      ctx.state.combinedId = combinedId
+  const cacheToken = `token:${token}`
+  let username
+  if (token) {
+    if (username = cache.get(cacheToken)) {
+      ctx.state.username = username
     } else {
-      if (await user.checkCombinedId(combinedId)) {
-        cache.set(combinedId, 1, 60 * 60 * 2)
-        ctx.state.combinedId = combinedId
+      if ((username = await user.checkToken(token)) !== false) {
+        cache.set(token, username, 60 * 60 * 2)
+        ctx.state.username = username
       }
     }
   }
 
-  if (!ctx.state.combinedId) {
-    if (ctx.path === '/user/getCombinedId') {
+  if (!ctx.state.username) {
+    if ([
+      '/user/login',
+      '/user/register',
+    ].includes(ctx.path)) {
       await next()
     } else {
       ctx.body = {

@@ -1,6 +1,6 @@
 {
-  "name": "ByReader",
-  "version": "0.0.1",
+  "name": "byreader",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -15,14 +15,16 @@
     "@capacitor/haptics": "4.1.0",
     "@capacitor/keyboard": "4.1.1",
     "@capacitor/status-bar": "4.1.1",
-    "@ionic/vue": "^6.0.0",
-    "@ionic/vue-router": "^6.0.0",
+    "@ionic/core": "^7.3.0",
+    "@ionic/vue": "^7.3.0",
+    "@ionic/vue-router": "^7.3.0",
     "axios": "^1.3.4",
     "core-js": "^3.6.5",
     "ionicons": "^6.0.3",
+    "photoswipe": "^5.3.8",
     "swiper": "^9.1.0",
-    "vue": "^3.2.21",
-    "vue-router": "^4.0.12",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4",
     "vue-virtual-scroller": "^2.0.0-beta.8",
     "vue-waterfall-plugin-next": "^2.2.0"
   },
@@ -47,7 +49,8 @@
     "eslint-plugin-vue": "^9.8.0",
     "jest": "^27.3.1",
     "ts-jest": "^27.0.7",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "vite-plugin-pwa": "^0.16.4"
   },
   "description": "An Ionic project"
 }

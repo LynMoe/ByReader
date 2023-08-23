@@ -1,14 +1,15 @@
 const axios = require('axios')
 const retry = require('./retry')
 
-async function fetch (url, options) {
+function fetch (url, options) {
   // TODO: add cdn worker callback support
-  const response = await axios(url, {
+  const response = axios(url, {
     responseType: 'text',
+    // timeout: 7000,
     ...options,
   })
 
-  return await response.data
+  return response.then(res => res.data)
 }
 
 module.exports = fetch

@@ -5,6 +5,10 @@ class Cache {
     this.cache = new NodeCache(options)
   }
 
+  has (key) {
+    return this.cache.has(key)
+  }
+
   get (key) {
     return this.cache.get(key)
   }

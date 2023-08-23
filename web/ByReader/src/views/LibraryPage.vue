@@ -1,16 +1,34 @@
 <template>
   <ion-page>
-    <ion-header>
+    <ion-header v-if="getPlatforms().includes('ios')" :translucent="true">
       <ion-toolbar>
         <ion-title>Library</ion-title>
       </ion-toolbar>
     </ion-header>
+    <ion-header v-else>
+      <ion-toolbar>
+        <ion-title>Library</ion-title>
+        <ion-buttons style="margin-right: 8px" slot="end">
+          <!-- <ion-button @click="this.$router.push({ name: 'SettingPage' })">
+            <IonIcon :icon="settingsOutline"></IonIcon>
+          </ion-button> -->
+          <ion-button @click="this.$router.push({ name: 'SearchPage' })">
+            <IonIcon :icon="searchOutline"></IonIcon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
+      <ion-header v-if="getPlatforms().includes('ios')" collapse="condense">
         <ion-toolbar>
           <ion-title size="large">Library</ion-title>
           <ion-buttons style="margin-right: 8px" :collapse="true" slot="end">
-            <ion-button @click="this.$router.push('/library/search')"><IonIcon :icon="searchOutline"></IonIcon></ion-button>
+            <!-- <ion-button @click="this.$router.push({ name: 'SettingPage' })">
+              <IonIcon :icon="settingsOutline"></IonIcon>
+            </ion-button> -->
+            <ion-button @click="this.$router.push({ name: 'SearchPage' })">
+              <IonIcon :icon="searchOutline"></IonIcon>
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -23,14 +41,14 @@
         </ion-segment>
         <LibraryList :item-list="itemList" />
       </div>
-      
+
     </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel, IonButtons, IonButton, IonIcon } from '@ionic/vue'
-import { searchOutline } from 'ionicons/icons'
+import { getPlatforms, onIonViewWillEnter, IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel, IonButtons, IonButton, IonIcon } from '@ionic/vue'
+import { searchOutline, settingsOutline } from 'ionicons/icons'
 import LibraryList from '@/components/LibraryList.vue'
 
 import { store, state } from '@/util/store'
@@ -44,6 +62,8 @@ export default defineComponent({
   setup() {
     return {
       searchOutline,
+      settingsOutline,
+      getPlatforms,
     }
   },
   components: {
@@ -65,6 +85,13 @@ export default defineComponent({
     segmentList: [],
     itemList: [],
   }),
+  computed: {
+    newItemList() {
+      const list = []
+
+      return list
+    },
+  },
   methods: {
     segmentChanged(event: any) {
       console.log(event.detail.value)
@@ -92,8 +119,8 @@ export default defineComponent({
       console.log('getData', this.segmentValue)
 
       return fetch('/user/bookshelf', {
-          method: 'GET',
-        }).then(res => res.result.comicIds)
+        method: 'GET',
+      }).then(res => res.result.comicIds)
         .then(res => {
           this.segmentList = Object.keys(res)
           if (!this.segmentList.includes(this.segmentValue)) {
@@ -114,14 +141,17 @@ export default defineComponent({
       handler() {
         this.getData()
       },
-      immediate: true,
+      immediate: false,
     },
+  },
+  ionViewWillEnter() {
+    console.log('ionViewWillEnter event fired')
+    this.getData()
   },
 })
 </script>
 
-<style scoped>
-.warpper {
+<style scoped>.warpper {
   width: 100%;
   text-align: center;
 }
@@ -129,6 +159,4 @@ export default defineComponent({
 .warpper ion-segment {
   width: auto;
   margin: 16px;
-}
-
-</style>
+}</style>

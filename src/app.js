@@ -1,8 +1,8 @@
-const db = require('./db')
+const db = require('./util/db')
 require('./cache')
 
 ;(async () => {
-  await db.init()
+  await db.initClient()
 
   require('./api')
 })()

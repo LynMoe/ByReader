@@ -4,24 +4,29 @@ const config = require('./../util/config')
 const comic = require('../model/comic')
 const image = require('../model/image')
 const { comicQueue } = require('./../util/queue')
-const { comicCache } = require('./../util/cache')
+const comicCache = require('./../cache')('api-comic')
+const logger = require('./../util/log').child({ module: 'API-Comic' })
 
 async function queueRequest(fn, err, finallyFn) {
-  comicQueue.push(function(cb) {
-    return Promise.race([
-      fn(),
-      new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error('Request timeout'))
-        }, config('queue.comic.timeout', 10000))
+  return new Promise((resolve, reject) => {
+    comicQueue.push(function(cb) {
+      return Promise.race([
+        fn(),
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('Request timeout'))
+          }, config('queue.comic.timeout', 10000))
+        })
+      ]).then((result) => {
+        cb(null, result)
+        resolve(result)
+      }).catch((e) => {
+        err(e)
+        cb(e)
+        reject(e)
+      }).finally(() => {
+        finallyFn()
       })
-    ]).then((result) => {
-      cb(null, result)
-    }).catch((e) => {
-      err(e)
-      cb(e)
-    }).finally(() => {
-      finallyFn()
     })
   })
 }
@@ -51,7 +56,7 @@ router.get('/search', async (ctx, next) => {
     return
   }
 
-  queueRequest(async () => {
+  return queueRequest(async () => {
     let result
     const key = encodeURIComponent(`search-${siteId}-${keyword}-${page}`)
     if (comicCache.has(key)) {
@@ -85,7 +90,7 @@ router.get('/comic', async (ctx, next) => {
     return
   }
 
-  queueRequest(async () => {
+  return queueRequest(async () => {
     let result
 
     if (comicIds) {
@@ -135,7 +140,7 @@ router.get('/chapter', async (ctx, next) => {
     return
   }
 
-  queueRequest(async () => {
+  return queueRequest(async () => {
     const key = encodeURIComponent(`chapter-${comicId}`)
     let result
     if (comicCache.has(key)) {
@@ -169,7 +174,7 @@ router.get('/chapter/detail', async (ctx, next) => {
     return
   }
 
-  queueRequest(async () => {
+  return queueRequest(async () => {
     const key = encodeURIComponent(`chapter-detail-${comicId}-${chapterId}`)
     let result
     if (comicCache.has(key)) {
@@ -195,6 +200,7 @@ router.get('/chapter/detail', async (ctx, next) => {
 router.get('/image', async (ctx, next) => {
   const { url } = ctx.query
 
+  // todo: url should be checked inside comic provider
   if (!url || !validator.isURL(url.split(':').splice(1).join(':'))) {
     ctx.body = {
       code: 400,
@@ -210,7 +216,7 @@ router.get('/image', async (ctx, next) => {
     accept = 'image/webp'
   }
 
-  queueRequest(async () => {
+  return queueRequest(async () => {
     let imageBuffer = await image.getImage(url, accept.replace('image/', '')) // Cached inside
     
     ctx.set('Content-Type', accept)

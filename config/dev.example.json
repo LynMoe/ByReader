@@ -1,27 +1,42 @@
 {
   "system": {
     "key": "thisisakey",
-    "db": {
-      "type": "nedb",
-      "path": "config",
-      "nedb": {
-        "autocompactionInterval": 1800000
-      }
+    "name": "Byreader"
+  },
+  "db": {
+    "uri": "mongodb://root:root@127.0.0.1:27017/",
+    "name": "byreader"
+  },
+  "queue": {
+    "comic": {
+      "concurrency": 15,
+      "timeout": 5000
+    }
+  },
+  "cache": {
+    "NodeCache": {
+      "stdTTL": 60
     },
-    "cache": {
-      "type": "NodeCache",
-      "path": "cache",
-      "NodeCache": {
-        "stdTTL": 600,
-        "checkperiod": 300,
-        "maxKeys": 1000
-      }
+    "type": "NodeCache"
+  },
+  "fileCache": {
+    "enable": true,
+    "maxSize": 1024,
+    "maxFileSize": 10,
+    "path": "cache"
+  },
+  "koa": {
+    "port": 3000
+  },
+  "imageCompress": {
+    "jpeg": {
+      "quality": 80
     },
-    "koa": {
-      "port": 3000
+    "webp": {
+      "quality": 80
     },
-    "image": {
-      "quality": 90
+    "avif": {
+      "quality": 80
     }
   }
 }

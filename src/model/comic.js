@@ -1,15 +1,14 @@
 const fs = require('fs')
 const path = require('path')
 
-const db = require('./../db')
-
 const siteList = {}
 {
-  const sites = fs.readdirSync(path.resolve(__dirname, '../site'))
+  const baseDir = path.resolve(__dirname, '../site')
+  const sites = fs.readdirSync(baseDir)
   for (const site of sites) {
     if (site.endsWith('.js') && !site.startsWith('.')) {
       const siteName = path.basename(site, '.js').toLocaleLowerCase()
-      siteList[siteName] = require(path.resolve(__dirname, '../site') + '/' + site)
+      siteList[siteName] = require(baseDir + '/' + site)
     }
   }
 }
@@ -17,8 +16,8 @@ const siteList = {}
 /*
   * @return [site, origin]
   */
-function checkSite(string) {
-  const split = `${string}`.split(':')
+function checkSite(comicUrl) {
+  const split = `${comicUrl}`.split(':')
   const site = split.shift()
   if (!site || !siteList[site]) throw new Error('Site not found')
 
@@ -87,7 +86,7 @@ async function getChapterDetail(_comicId, chapterId) {
 async function getImage(_url) {
   const [site, url] = checkSite(_url)
 
-  return await siteList[site].getImage(url)
+  return siteList[site].getImage(url)
 }
 
 module.exports = {

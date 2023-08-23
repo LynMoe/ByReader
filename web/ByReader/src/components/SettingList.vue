@@ -1,30 +1,25 @@
 <template>
-  <ion-card v-for="group in settingList" :key="group.name" :value="group.name">
-    <ion-card-header>
-      <ion-card-title>{{ group.name }}</ion-card-title>
-      <ion-card-subtitle>{{ group.description }}</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item v-for="item in group.child" :key="item.name" :detail="false">
-          <ion-label>
-            <h2>{{ item.name }}</h2>
-            <p v-if="item.description">{{ item.description }}</p>
-          </ion-label>
-          <ion-input v-if="item.type === 'input'" :value="getSettingValue(item.key)"
-            @ion-change="event => onValueChange(event, item.key)" />
-          <ion-select v-if="item.type === 'select'" :value="item.value">
-            <ion-select-option v-for="option in item.options" :key="option.value" :value="option.value">{{ option.name
-            }}</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+  <ion-list v-for="group in settingList" :key="group.name" :value="group.name">
+    <ion-list-header>
+      <ion-label>{{ group.name }}</ion-label>
+    </ion-list-header>
+    <ion-item v-for="item in group.child" :key="item.name" :detail="false">
+      <ion-label>
+        <h2>{{ item.name }}</h2>
+        <!-- <p v-if="item.description">{{ item.description }}</p> -->
+      </ion-label>
+      <ion-input v-if="item.type === 'input'" :value="getSettingValue(item.key)"
+        @ion-change="event => onValueChange(event, item.key)" />
+      <ion-select v-if="item.type === 'select'" :value="item.value">
+        <ion-select-option v-for="option in item.options" :key="option.value" :value="option.value">{{ option.name
+        }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
 </template>
 
 <script lang="ts">
-import { IonLabel, IonItem, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonInput, IonList, IonSelect, IonSelectOption } from '@ionic/vue'
+import { IonLabel, IonItem, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonListHeader, IonInput, IonList, IonSelect, IonSelectOption } from '@ionic/vue'
 import { defineComponent } from 'vue'
 
 import { planetOutline } from 'ionicons/icons';
@@ -36,11 +31,8 @@ export default defineComponent({
     IonItem,
     IonLabel,
     // IonIcon,
-    IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
+    IonListHeader,
+    // IonCardSubtitle,
     IonInput,
     IonList,
     IonSelect,

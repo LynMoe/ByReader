@@ -1,43 +1,13 @@
 <template>
-  <swiper v-if="ready" :modules="modules" :space-between="0" :zoom="{
-    maxRatio: 2,
-  }" :free-mode="false" :virtual="{
-    addSlidesAfter: 8, // preload 8 slides after
-    addSlidesBefore: 3,
-  }" @tap="onTap" @slideChange="slideChange" @afterInit="s => swiperRef = s">
-    <swiper-slide v-for="slideContent in slides" :key="slideContent.url" :virtualIndex="slideContent.url">
-      <div class="imgWarpper" style="height: 100%;">
-        <div class="swiper-zoom-container" style="height: 100%">
-          <VueLoadImage>
-            <template v-slot:image>
-              <img :src="getImageLink(slideContent.url)"/>
-            </template>
-            <template v-slot:preloader> 
-              <ion-spinner></ion-spinner>
-            </template>
-            <template v-slot:error>Image load fails</template>
-          </VueLoadImage>
-        </div>
-      </div>
-    </swiper-slide>
-  </swiper>
-
-  <!-- <div>
-    <img v-for="item in filteredItems" :key="item.url" :src="item.url.replace('copymanga:', '')" />
-  </div> -->
+  <div id="readerDiv"></div>
+  <div class="spinner">
+    <ion-spinner></ion-spinner>
+  </div>
 </template>
 
 <script lang="ts">
-
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Virtual, FreeMode, Zoom } from 'swiper'
-
-import 'swiper/css'
-import 'swiper/css/pagination'
-import 'swiper/css/navigation'
-import 'swiper/css/virtual'
-
-import VueLoadImage from 'vue-load-image'
+import PhotoSwipeLightbox from 'photoswipe/lightbox'
+import 'photoswipe/style.css'
 
 import { IonPage, IonContent, IonList, IonImg, IonSpinner } from '@ionic/vue'
 
@@ -64,50 +34,53 @@ export default defineComponent({
     'readyChange',
   ],
   components: {
-    Swiper,
-    SwiperSlide,
-    VueLoadImage,
-    IonSpinner,
     // IonImg,
+    IonSpinner,
   },
   setup() {
     return {
-      modules: [Virtual, FreeMode, Zoom],
+      // modules: [Virtual, FreeMode, Zoom],
       getImageLink,
     }
   },
   data() {
     return {
-      slides: [],
       windowHeight: window.innerHeight,
       windowWidth: window.innerWidth,
-      swiperRef: null,
       loadingChapter: new Set(),
       loadedChapter: new Set(),
+
       chapterIdIndexMap: {},
-      activeSlideStartIndex: 0,
-      oldChapterIndex: -1,
+      chapterIndexOld: -1,
+
       ready: false,
       tapTimeoutId: null,
+
+      lightbox: null,
+
+      slideChapterStartIndex: 0,
+      slideChapterId: null,
+      slideNowPage: 0,
     }
   },
   watch: {
     imageIndex() {
-      if (!this.ready) return
-      this.swiperRef.slideTo(this.activeSlideStartIndex + this.imageIndex)
+      if (!this.ready || this.slideNowPage === this.imageIndex) return
+      this.lightbox.pswp.goTo(this.slideChapterStartIndex + this.imageIndex)
     },
+    // for external change
     chapterIndex: {
       immediate: true,
       handler() {
-        if (this.oldChapterIndex === -1) {
-          this.oldChapterIndex = this.chapterIndex
+        if (this.chapterIndexOld === -1) {
+          this.chapterIndexOld = this.chapterIndex
         }
         console.log('insideChapterChange', this.chapterIndex, this.oldChapterIndex)
         if (Math.abs(this.chapterIndex - this.oldChapterIndex) > 1) {
           console.log('chapterIndex', this.chapterIndex, this.oldChapterIndex)
           this.initChapter()
         }
-        this.oldChapterIndex = this.chapterIndex
+        this.chapterIndexOld = this.chapterIndex
       },
     },
   },
@@ -116,41 +89,55 @@ export default defineComponent({
       this.windowHeight = window.innerHeight
       this.windowWidth = window.innerWidth
     },
-    slideChange() {
-      console.log('slideChange', this.swiperRef.activeIndex, this.slides[this.swiperRef.activeIndex])
-      const nowSlide = this.slides[this.swiperRef.activeIndex]
-      const chapterId = nowSlide.chapterId
-      const chapterIndex = this.chapterIdIndexMap[chapterId]
-      console.log('slideChange', chapterId, chapterIndex, nowSlide.index, this.chapterList, this.chapterIdIndexMap)
+    slideChange(slideActivateIndex) {
+      let slideNowPage = slideActivateIndex - this.slideChapterStartIndex
+      this.slideNowPage = slideNowPage
+      this.$emit('update:imageIndex', slideNowPage)
 
-      this.activeSlideStartIndex = this.swiperRef.activeIndex - nowSlide.index
+      let chapterIndex = this.chapterIdIndexMap[this.slideChapterId]
+      let chapterImageList = this.chapterListImageList[this.slideChapterId]
+      let chapterImageLength = chapterImageList.length
 
-      this.$emit('update:chapterIndex', chapterIndex)
-      this.$emit('update:imageIndex', nowSlide.index)
-      this.preloadChapter(chapterIndex, nowSlide.index)
-    },
-    preloadChapter(chapterIndex, imageIndex) {
-      console.log('preloadChapter', chapterIndex, imageIndex)
-      const chapterId = this.chapterList[chapterIndex].id
+      console.log('slide change', slideActivateIndex, slideNowPage, this.slideChapterStartIndex, chapterIndex, chapterImageLength)
 
-      const chapterImageList = this.chapterListImageList[chapterId]
-      const chapterImageLength = chapterImageList.length
+      let nextChapter = this.chapterList[chapterIndex + 1]
+      let prevChapter = this.chapterList[chapterIndex - 1]
 
-      const nextChapter = this.chapterList[chapterIndex + 1]
-      const prevChapter = this.chapterList[chapterIndex - 1]
+      if ((slideNowPage === -1) || slideNowPage >= chapterImageLength) {
+        const nextOrPrev = slideNowPage < 0 ? 'prev' : 'next'
+        nextOrPrev === 'prev' ? chapterIndex-- : chapterIndex++
+        this.$emit('update:chapterIndex', chapterIndex)
+        this.slideChapterId = this.chapterList[chapterIndex].id
 
-      if (nextChapter && imageIndex > chapterImageLength - 5 && !this.loadedChapter.has(nextChapter.id)) {
+        if (nextOrPrev === 'prev') {
+          chapterImageLength = this.chapterListImageList[this.slideChapterId].length
+          this.slideChapterStartIndex = this.slideChapterStartIndex - chapterImageLength
+        }
+        else this.slideChapterStartIndex = this.slideChapterStartIndex + chapterImageLength
+
+        chapterImageList = this.chapterListImageList[this.slideChapterId]
+        chapterImageLength = chapterImageList.length
+
+        slideNowPage = slideActivateIndex - this.slideChapterStartIndex
+        this.$emit('update:imageIndex', slideNowPage)
+
+        nextChapter = this.chapterList[chapterIndex + 1]
+        prevChapter = this.chapterList[chapterIndex - 1]
+      }
+
+      if (nextChapter && slideNowPage > chapterImageLength - 5) {
         console.log('load next chapter')
-        this.loadItem(nextChapter.id, 'next')
+        this.loadChapter(nextChapter.id, 'next')
       }
 
-      if (prevChapter && imageIndex < 5 && !this.loadedChapter.has(prevChapter.id)) {
-        console.log('load prev chapter')
-        this.loadItem(prevChapter.id, 'prev')
+      if (prevChapter && slideNowPage < 5 && slideNowPage >= 0) {
+        console.log('load prev chapter', chapterIndex, prevChapter, slideNowPage, slideActivateIndex, this.slideChapterStartIndex)
+        this.loadChapter(prevChapter.id, 'prev')
       }
     },
-    onTap(swipe, event) {
-      this.swiperRef = swipe
+    onTap(releasePoint, event) {
+      // this.swiperRef = swipe
+      console.log(releasePoint, event)
 
       const x = event.clientX
       const y = event.clientY
@@ -176,7 +163,7 @@ export default defineComponent({
             this.tapTimeoutId = setTimeout(() => {
               this.$emit('toggleControl')
               this.tapTimeoutId = null
-            }, 200)
+            }, 150)
           }
           break
         default:
@@ -184,39 +171,129 @@ export default defineComponent({
       }
     },
     prev() {
-      this.swiperRef.slidePrev(300)
+      this.lightbox.pswp.prev()
     },
     next() {
-      this.swiperRef.slideNext(300)
+      this.lightbox.pswp.next()
     },
-    loadItem(chapterId, direction = 'next') {
-      if (this.loadingChapter.has(chapterId)) {
+    loadChapter(chapterId, direction = 'next') {
+      if (this.loadingChapter.has(chapterId) || this.loadedChapter.has(chapterId)) {
         return
       }
+
       this.loadingChapter.add(chapterId)
       return this.getChapterImage(chapterId)
         .then(() => {
           const result = this.chapterListImageList[chapterId].map((item, index) => {
             return {
-              index: index,
+              chapterImageIndex: index,
               chapterId: chapterId,
-              url: item.url,
+              src: getImageLink(item.url),
+              width: 0,
+              height: 0,
             }
           })
+          console.log('loadChapter', direction, result)
+
+          // console.log(this.lightbox, this.lightbox.pswp)
+          const lb = this.lightbox.pswp || this.lightbox
+          const originLength = lb.options.dataSource.length
           if (direction === 'next') {
-            this.slides = this.slides.concat(result)
+            // Concat new slides to the end and refresh
+            lb.options.dataSource = lb.options.dataSource.concat(result)
+            
+            console.log('next load concat', originLength, lb.options.dataSource.length)
+            setTimeout(() => {
+              for (let i = originLength; i < lb.options.dataSource.length; i++) {
+                lb.refreshSlideContent && lb.refreshSlideContent(i)
+              }
+            }, 1)
           } else {
-            this.slides = result.concat(this.slides)
-            console.log('concat', this.swiperRef.activeIndex, result.length, this.swiperRef.activeIndex + result.length)
-            this.swiperRef.slideTo(this.swiperRef.activeIndex + result.length, 0)
+            setTimeout(() => {
+              lb.options.dataSource = result.concat(lb.options.dataSource)
+
+              console.log('prev load concat', originLength, this.slideChapterStartIndex, lb.currSlide.index, result.length, lb.options.dataSource.length)
+              this.slideChapterStartIndex = this.slideChapterStartIndex + result.length
+              
+              for (let i = 0; i < lb.options.dataSource.length; i++) {
+                lb.refreshSlideContent(i)
+              }
+
+              lb.goTo(lb.currSlide.index + result.length)
+            }, 500)
           }
+          console.log('loadChapter', lb.options.dataSource.length, lb.options.dataSource)
+
           this.loadingChapter.delete(chapterId)
           this.loadedChapter.add(chapterId)
 
           return result
-        }).catch(() => {
+        }).catch((e) => {
+          console.error(e)
           this.loadingChapter.delete(chapterId)
         })
+    },
+    initLightbox() {
+      const lightbox = new PhotoSwipeLightbox({
+        dataSource: [],
+        pswpModule: () => import('photoswipe'),
+        bgOpacity: 1,
+        loop: false,
+        pinchToClose: false,
+        closeOnVerticalDrag: false,
+        imageClickAction: this.onTap,
+        tapAction: this.onTap,
+        appendToEl: document.querySelector('#readerDiv'),
+        preloaderDelay: 0,
+        preload: [7, 7],
+        wheelToZoom: true,
+        arrowPrev: false,
+        arrowNext: false,
+        secondaryZoomLevel: 0.75,
+      })
+
+      // remove counter and close btn
+      lightbox.addFilter('uiElement', (element, data) => {
+        if (data.name === 'counter' || data.name === 'close' || data.name === 'zoom') {
+          element.style.display = 'none'
+        }
+        return element
+      })
+
+      // dyncamic load image size
+      lightbox.on('contentLoadImage', ({ content }) => {
+        // console.log(content)
+        const item = content.data
+        if (item.width < 1 || item.height < 1) {
+          console.log('load image for', item.src, content.index)
+          // content.element.addEventListener('load', (e) => {
+          //   console.log(content.element, e)
+          //   item.width = (content.element as HTMLImageElement).width || 600
+          //   item.height = (content.element as HTMLImageElement).height || 600
+          //   console.log('image loaded', item)
+          //   this.lightbox.pswp.refreshSlideContent(content.index)
+          // })
+          
+          const img = new Image()
+          img.onload = () => {
+            item.width = img.width
+            item.height = img.height
+            console.log('image loaded', item)
+            this.lightbox.pswp.refreshSlideContent(content.index)
+          }
+          img.src = item.src
+        }
+      })
+
+      lightbox.on('contentActivate', ({ content }) => {
+        // content becomes active (the current slide)
+        // can be default prevented
+        console.log('contentActivate', content)
+        this.slideChange(content.index)
+      })
+
+      lightbox.init()
+      this.lightbox = lightbox
     },
 
     initChapter() {
@@ -227,36 +304,35 @@ export default defineComponent({
         this.chapterIdIndexMap[item.id] = index
       }
 
-      this.slides = []
+      // this.lightbox.pswp && this.lightbox.pswp.options.dataSource = []
       this.loadedChapter.clear()
       this.loadingChapter.clear()
 
-      let chapterId = this.chapterList[this.chapterIndex].id
-      this.loadItem(chapterId, 'next')
-        .then(() => {
-          if (this.chapterIndex < this.chapterList.length - 1) {
-            console.log('chapterIndex < chapterList.length - 1', this.chapterIndex)
-            chapterId = this.chapterList[this.chapterIndex + 1].id
-            return this.loadItem(chapterId, 'next')
-          }
-        }).then(() => {
-          this.ready = true
-          this.$emit('readyChange', true)
-        }).then(() => {
-          if (this.chapterIndex > 0) {
-            console.log('chapterIndex > 0', this.chapterIndex)
-            chapterId = this.chapterList[this.chapterIndex - 1].id
-            return this.loadItem(chapterId, 'prev')
-          }
-        })
+      // load and preload chapters
+      const chapterId = this.chapterList[this.chapterIndex].id
+      return this.loadChapter(chapterId, 'next').then(() => {
+        this.ready = true
+        this.slideChapterId = chapterId
+        this.$emit('readyChange', true)
+        this.lightbox.loadAndOpen(0)
+      })
     },
+  },
+  unmounted() {
+    if (this.lightbox) {
+      this.lightbox.destroy();
+      this.lightbox = null;
+    }
   },
   mounted() {
     this.$nextTick(() => {
       window.addEventListener('resize', this.onResize)
     })
 
-    this.initChapter()
+    this.initLightbox()
+    this.$nextTick(() => {
+      this.initChapter()
+    })
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.onResize)
@@ -265,33 +341,29 @@ export default defineComponent({
 </script>
 
 <style>
-.swiper {
-  width: 100%;
-  height: 100%;
-
+.pswp {
+  --pswp-root-z-index: 500;
+  --pswp-bg: #000;
+  --pswp-placeholder-bg: #000;
 }
 
-.swiper-zoom-container {
+@supports(padding: max(0px)) {
+  .pswp__ui {
+    top: max(0, env(safe-area-inset-top));
+  }
+}
+.pswp__preloader {
+  position: absolute;
+  right: 0;
+  top: env(safe-area-inset-top);
+}
+</style>
+
+<style scoped>
+.spinner {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.swiper-slide {
-  text-align: center;
-  font-size: 18px;
-  background: #fff;
-
-  /* Center slide text vertically */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.swiper-slide img {
-  display: block;
-  max-width: 100%;
-  max-block-size: 100%;
-  object-fit: cover;
+  height: 100vh; /* or any other value */
 }
 </style>

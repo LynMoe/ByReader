@@ -1,15 +1,18 @@
 <template>
-  <Waterfall :list="itemList" :width="width" imgSelector="cover" :delay="150" :breakpoints="breakpoint">
+  <Waterfall :list="itemList" :width="width" imgSelector="cover" :delay="300" backgroundColor=""
+    :breakpoints="breakpoint">
     <template #item="{ item }">
       <ion-card @click="onComicClick(item)">
         <LazyImg alt="{{ item.name }}" :url="getImageLink(item.cover)" />
         <ion-card-header>
           <ion-card-title>{{ item.name }}</ion-card-title>
-          <ion-card-subtitle v-if="item.alias.length !== 0">{{ item.alias.join(', ') }}</ion-card-subtitle>
         </ion-card-header>
 
         <ion-card-content v-if="item.description">
           {{ item.description.length > 20 ? item.description.slice(0, 20) + '...' : item.description }}
+        </ion-card-content>
+        <ion-card-content v-else-if="item.alias.length !== 0">
+          {{ item.alias.join(', ') }}
         </ion-card-content>
       </ion-card>
     </template>
@@ -48,7 +51,6 @@ export default defineComponent({
     IonCardHeader,
     IonCardContent,
     IonCardTitle,
-    IonCardSubtitle,
     Waterfall,
     LazyImg,
   },
@@ -74,10 +76,6 @@ export default defineComponent({
         },
       })
     },
-  },
-  mounted: function () {
-    const router = useIonRouter()
-    // this.getData()
   },
 })
 </script>

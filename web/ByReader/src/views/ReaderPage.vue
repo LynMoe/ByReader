@@ -63,18 +63,24 @@ export default defineComponent({
     ready: false,
   }),
   watch: {
-    nowChapter (value) {
-      console.log('set reading progress', value, this.comic)
-      return fetch(`/user/bookshelf/progress`, {
-        method: 'POST',
-        body: {
-          comicId: this.comic.id,
-          chapterId: value.id,
-        },
-      })
-        .then((res: any) => {
-          console.log('set reading progress', res)
+    nowChapter: {
+      immediate: true,
+      handler(value) {
+        console.log('set reading progress', value, this.comic)
+        return fetch(`/user/bookshelf/progress`, {
+          method: 'POST',
+          data: {
+            comicId: this.comic.id,
+            chapterId: value.id,
+          },
         })
+          .then((res: any) => {
+            console.log('set reading progress', res)
+          })
+      },
+    },
+    imageIndex(index) {
+      console.log('imageIndex', index)
     },
   },
   methods: {
@@ -97,14 +103,13 @@ export default defineComponent({
       console.log('onToggleControl', this.showControl)
     },
   },
-  watch: {
-    imageIndex(index) {
-      console.log('imageIndex', index)
-    },
-  },
   mounted() {
     console.log('ReaderPage mounted')
     console.log(state.reader)
+    if (state.reader.comic.id === null) {
+      this.$router.push('/library')
+      return
+    }
     // this.getChapterImage(this.nowChapter.id)
   },
 })

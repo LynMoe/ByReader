@@ -1,18 +1,15 @@
-function retry (fn, times = 3, interval = 300) {
-  return new Promise((resolve, reject) => {
-    const attempt = () => {
-      return Promise.resolve().then(fn).then(resolve).catch(err => {
-        if (times === 1) {
-          reject(err)
-        } else {
-          times--
-          setTimeout(attempt, interval)
-        }
-      })
+async function retry(fn, times = 3, interval = 300) {
+  while (times > 0) {
+    try {
+      const result = await fn()
+      return result
+    } catch (err) {
+      console.error(err)
+      if (times === 1) throw err
+      times--
+      await new Promise(resolve => setTimeout(resolve, interval))
     }
-    
-    return attempt()
-  })
+  }
 }
 
 module.exports = retry

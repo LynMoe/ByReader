@@ -60,4 +60,4 @@ class FileCache {
   }
 }
 
-module.exports = FileCache()
+module.exports = new FileCache()

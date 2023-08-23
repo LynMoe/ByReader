@@ -1,63 +1,80 @@
 const crypto = require('crypto')
 const config = require('./../util/config')
+const _db = require('./../util/db').getClient()
+const randomString = require('./../util/common').randomString
 
-const db = require('./../db')
+async function createUser(username, password) {
+  password = crypto.createHash('sha256').update(JSON.stringify({
+    password,
+    secret: config('system.key', ''),
+  })).digest('hex')
 
-async function checkOrCreateUser(email, passcode) {
-  passcode = crypto.createHash('sha256').update(JSON.stringify(passcode + config('system.key', ''))).digest('hex')
-  let combinedId = crypto.createHash('sha256').update(JSON.stringify(`${email}:${passcode}` + config('system.key', ''))).digest('hex')
+  const db = _db.collection('user')
+  const user = await db.findOne({ username })
+  if (user) throw new Error('Username already exists')
 
-  const user = await db.query('user', { email }, {
-    findOne: true,
+  const token = randomString(32)
+
+  await db.insert('user', {
+    username,
+    password,
+    token,
+    created: (new Date()).getTime(),
   })
-  if (!user) {
-    await db.insert('user', {
-      email,
-      passcode,
-      combinedId,
-      created: (new Date()).getTime(),
-    })
-  } else {
-    if (user.passcode !== passcode) throw new Error('Passcode not match')
+
+  return token
+}
+
+async function checkUsernameAndPassword(username, password) {
+  password = crypto.createHash('sha256').update(JSON.stringify({
+    password,
+    secret: config('system.key', ''),
+  })).digest('hex')
+
+  const db = _db.collection('user')
+  const user = await db.findOne({ username })
+  if (!user || user.password !== password) throw new Error('Username or password incorrect')
+
+  return user.token
+}
+
+async function checkToken(token) {
+  const db = _db.collection('user')
+  const user = await db.findOne({ token })
+
+  if (user) return user.username
+  else return false
+}
+
+async function getUserInfo(username) {
+  const db = _db.collection('user')
+  return await db.findOne({ username })
+}
+
+async function getUserBookshelf(username) {
+  const db = _db.collection('bookshelf')
+
+  const data = await db.findOne({ username })
+  if (data && Object.values(data.comicIds).length === 0) data.comicIds = {
+    'Default': [],
   }
-
-  return combinedId
-}
-
-async function checkCombinedId(combinedId) {
-  const user = await db.query('user', { combinedId }, {
-    findOne: true,
-  })
-
-  return !!user
-}
-
-async function getUserInfo(combinedId) {
-  return await db.query('user', { combinedId }, {
-    findOne: true,
-  })
-}
-
-async function getUserBookshelf(combinedId) {
-  return await db.query('bookshelf', { combinedId }, {
-    findOne: true,
-  }) || {
-    combinedId,
-    comicIds: {},
+  return data || {
+    comicIds: {
+      'Default': [],
+    },
     progress: {},
   }
 }
 
-async function addBookToBookshelf(combinedId, bookshelfName, comicId) {
-  const bookshelf = await db.query('bookshelf', { combinedId }, {
-    findOne: true,
-  })
+async function addBookToBookshelf(username, bookshelfName, comicId) {
+  const db = _db.collection('bookshelf')
+  const bookshelf = await db.findOne({ username })
   if (!bookshelf) {
     const comicIds = {}
     comicIds[bookshelfName] = [comicId]
 
-    return await db.insert('bookshelf', {
-      combinedId,
+    return await db.insertOne({
+      username,
       comicIds,
       progress: {},
     })
@@ -66,15 +83,14 @@ async function addBookToBookshelf(combinedId, bookshelfName, comicId) {
     const comicIds = bookshelf.comicIds[bookshelfName]
     if (!comicIds.includes(comicId)) {
       comicIds.push(comicId)
-      return await db.update('bookshelf', { combinedId }, { comicIds })
+      return await db.updateOne({ username }, { $set: { comicIds: bookshelf.comicIds } })
     }
   }
 }
 
-async function removeBookFromBookshelf(combinedId, bookshelfName, comicId) {  
-  const bookshelf = await db.query('bookshelf', { combinedId }, {
-    findOne: true,
-  })
+async function removeBookFromBookshelf(username, bookshelfName, comicId) {
+  const db = _db.collection('bookshelf')
+  const bookshelf = await db.findOne({ username })
   if (!bookshelf || !bookshelf.comicIds[bookshelfName]) return
 
   const comicIds = bookshelf.comicIds[bookshelfName]
@@ -83,22 +99,21 @@ async function removeBookFromBookshelf(combinedId, bookshelfName, comicId) {
     if (comicIds.length === 0) {
       delete bookshelf.comicIds[bookshelfName]
     }
-    return await db.update('bookshelf', { combinedId }, { comicIds })
+    return await db.updateOne({ username }, { $set: { comicIds: bookshelf.comicIds } })
   }
 }
 
-async function setReadingProgress(combinedId, comicId, chapterId) {
-  let bookshelf = await db.query('bookshelf', { combinedId }, {
-    findOne: true,
-  })
+async function setReadingProgress(username, comicId, chapterId) {
+  const db = _db.collection('bookshelf')
+  let bookshelf = await db.findOne({ username })
   if (!bookshelf) {
     bookshelf = {
-      combinedId,
+      username,
       comicIds: {},
       progress: {},
     }
 
-    await db.insert('bookshelf', bookshelf)
+    await db.insertOne(bookshelf)
   }
 
   const progress = bookshelf.progress || {}
@@ -107,13 +122,12 @@ async function setReadingProgress(combinedId, comicId, chapterId) {
     progress[comicId].push(chapterId)
   }
 
-  return await db.update('bookshelf', { combinedId }, { progress })
+  return await db.updateOne({ username }, { $set: { progress } })
 }
 
-async function getReadingProgress(combinedId, comicId) {
-  const bookshelf = await db.query('bookshelf', { combinedId }, {
-    findOne: true,
-  })
+async function getReadingProgress(username, comicId) {
+  const db = _db.collection('bookshelf')
+  const bookshelf = await db.findOne({ username })
   if (!bookshelf) return []
 
   const progress = bookshelf.progress || {}
@@ -121,8 +135,9 @@ async function getReadingProgress(combinedId, comicId) {
 }
 
 module.exports = {
-  checkOrCreateUser,
-  checkCombinedId,
+  createUser,
+  checkUsernameAndPassword,
+  checkToken,
   getUserInfo,
   getUserBookshelf,
   addBookToBookshelf,
