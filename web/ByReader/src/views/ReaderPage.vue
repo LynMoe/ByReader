@@ -41,7 +41,7 @@ export default defineComponent({
     ReaderOverlay,
   },
   computed: {
-    mode: () => store.setting.reader.mode,
+    direction: () => store.setting.reader.direction,
     comic: () => state.reader.comic,
     chapterList: () => state.reader.chapterList,
     chapterIndex: {

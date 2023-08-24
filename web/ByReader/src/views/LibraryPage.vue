@@ -9,9 +9,9 @@
       <ion-toolbar>
         <ion-title>Library</ion-title>
         <ion-buttons style="margin-right: 8px" slot="end">
-          <!-- <ion-button @click="this.$router.push({ name: 'SettingPage' })">
+          <ion-button @click="this.$router.push({ name: 'SettingPage' })">
             <IonIcon :icon="settingsOutline"></IonIcon>
-          </ion-button> -->
+          </ion-button>
           <ion-button @click="this.$router.push({ name: 'SearchPage' })">
             <IonIcon :icon="searchOutline"></IonIcon>
           </ion-button>
@@ -23,9 +23,9 @@
         <ion-toolbar>
           <ion-title size="large">Library</ion-title>
           <ion-buttons style="margin-right: 8px" :collapse="true" slot="end">
-            <!-- <ion-button @click="this.$router.push({ name: 'SettingPage' })">
+            <ion-button @click="this.$router.push({ name: 'SettingPage' })">
               <IonIcon :icon="settingsOutline"></IonIcon>
-            </ion-button> -->
+            </ion-button>
             <ion-button @click="this.$router.push({ name: 'SearchPage' })">
               <IonIcon :icon="searchOutline"></IonIcon>
             </ion-button>

@@ -12,7 +12,7 @@ export const store = reactive({
       sort: 'asc',
     },
     reader: {
-      mode: 'ltr', // rtl, ltr, vertical
+      direction: 'ltr', // rtl, ltr, vertical
       touchZone: {
         left: [
           [0, 0, 0.3, 1],
@@ -26,6 +26,7 @@ export const store = reactive({
           [0.3, 0.3, 0.7, 0.7],
         ],
       },
+      zoomLevel: "1.2",
     },
   },
   user: {
@@ -65,9 +66,30 @@ export const state = reactive({
   isLogin: null,
 })
 
+function isObject(item) {
+  return (item && typeof item === 'object' && !Array.isArray(item))
+}
+function deepAssign(target, ...sources) {
+  sources.forEach(source => {
+      for (const key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+              if (isObject(source[key])) {
+                  if (!target[key]) Object.assign(target, { [key]: {} })
+                  deepAssign(target[key], source[key])
+              } else {
+                  Object.assign(target, { [key]: source[key] })
+              }
+          }
+      }
+  });
+
+  return target
+}
+
 const localStore = localStorage && localStorage.getItem('store')
 if (localStore) {
-  Object.assign(store, JSON.parse(localStore))
+  deepAssign(store, JSON.parse(localStore))
+  localStorage.setItem('store', JSON.stringify(store))
 } else {
   localStorage.setItem('store', JSON.stringify(store))
 }

@@ -4,15 +4,12 @@
       <ion-label>{{ group.name }}</ion-label>
     </ion-list-header>
     <ion-item v-for="item in group.child" :key="item.name" :detail="false">
-      <ion-label>
-        <h2>{{ item.name }}</h2>
-        <!-- <p v-if="item.description">{{ item.description }}</p> -->
-      </ion-label>
-      <ion-input v-if="item.type === 'input'" :value="getSettingValue(item.key)"
-        @ion-change="event => onValueChange(event, item.key)" />
-      <ion-select v-if="item.type === 'select'" :value="item.value">
-        <ion-select-option v-for="option in item.options" :key="option.value" :value="option.value">{{ option.name
-        }}</ion-select-option>
+      <ion-input v-if="item.type === 'input'" :label="item.name" :value="getSettingValue(item.key)"
+        @ion-input="event => onValueChange(event, item.key)" />
+      <ion-select v-else-if="item.type === 'select'" :label="item.name" @ion-change="event => onValueChange(event, item.key)" :value="getSettingValue(item.key)">
+        <ion-select-option v-for="option in item.options" :key="option.value" :value="option.value">
+          {{ option.name }}
+        </ion-select-option>
       </ion-select>
     </ion-item>
   </ion-list>
@@ -22,7 +19,7 @@
 import { IonLabel, IonItem, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonListHeader, IonInput, IonList, IonSelect, IonSelectOption } from '@ionic/vue'
 import { defineComponent } from 'vue'
 
-import { planetOutline } from 'ionicons/icons';
+import { bookmarkOutline, bookOutline } from 'ionicons/icons';
 
 import { store } from '@/util/store'
 
@@ -43,75 +40,87 @@ export default defineComponent({
   data: () => ({
     settingList: [
       {
-        name: 'General',
-        description: 'General settings',
-        icon: planetOutline,
+        name: 'Comic',
+        icon: bookmarkOutline,
         child: [
           {
-            name: 'API URL',
-            description: '',
-            type: 'input',
-            key: 'apiBase',
-          }
+            name: 'Sort',
+            type: 'select',
+            key: 'setting.comic.sort',
+            options: [
+              {
+                name: 'Ascending',
+                value: 'asc',
+              },
+              {
+                name: 'Descending',
+                value: 'desc',
+              },
+            ],
+          },
         ],
       },
-      // {
-      //   name: 'Reader',
-      //   description: 'Reader settings',
-      //   icon: bookOutline,
-      //   child: [
-      //     {
-      //       name: 'Mode',
-      //       description: 'Reader mode',
-      //       type: 'select',
-      //       options: [
-      //         {
-      //           name: 'Vertical',
-      //           value: 'vertical',
-      //         },
-      //         {
-      //           name: 'Horizontal',
-      //           value: 'horizontal',
-      //         },
-      //       ],
-      //     },
-      //     {
-      //       name: 'Direction',
-      //       description: 'Reader direction',
-      //       type: 'select',
-      //       options: [
-      //         {
-      //           name: 'Left to right',
-      //           value: 'ltr',
-      //         },
-      //         {
-      //           name: 'Right to left',
-      //           value: 'rtl',
-      //         },
-      //       ],
-      //     }
-      //   ],
-      // }
+      {
+        name: 'Reader',
+        icon: bookOutline,
+        child: [
+          {
+            name: 'Direction',
+            type: 'select',
+            key: 'setting.reader.direction',
+            options: [
+              {
+                name: 'Left to right',
+                value: 'ltr',
+              },
+              {
+                name: 'Right to left',
+                value: 'rtl',
+              },
+            ],
+          },
+          {
+            name: 'Zoom level',
+            type: 'input',
+            key: 'setting.reader.zoomLevel',
+          }
+        ],
+      }
     ],
   }),
   methods: {
-    getSettingValue(key) {
-      key = key.split('.')
-      let value = store
-      for (let i = 0; i < key.length; i++) {
-        value = value[key[i]]
+    deepAccess(obj, path) {
+      path = path.split('.');
+      for (let i = 0; i < path.length; i++) {
+        if (!Object.prototype.hasOwnProperty.call(obj, path[i])) {
+          return undefined;
+        }
+        obj = obj[path[i]];
       }
-      return value
+      return obj
     },
+
+    deepSet(obj, path, value) {
+      path = path.split('.');
+      for (let i = 0; i < path.length - 1; i++) {
+        if (!Object.prototype.hasOwnProperty.call(obj, path[i])) {
+          console.error('Invalid path: ' + path.join('.'))
+          return
+        }
+        obj = obj[path[i]]
+      }
+      obj[path[path.length - 1]] = value
+    },
+
+    getSettingValue(key) {
+      console.log(key, this.deepAccess(store, key))
+      return this.deepAccess(store, key)
+    },
+
     onValueChange(event, key) {
       const value = event.detail.value
-      key = key.split('.')
-      let obj = store
-      for (let i = 0; i < key.length - 1; i++) {
-        obj = obj[key[i]]
-      }
-      console.log(key[key.length - 1], value)
-      obj[key[key.length - 1]] = value
+      console.log(key, value)
+      this.deepSet(store, key, value)
     },
   },
   mounted: function () {

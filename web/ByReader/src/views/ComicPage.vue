@@ -71,9 +71,9 @@
         </ion-segment>
 
         <ion-list class="chapterList">
-          <ion-item button :detail="true" v-for="(item, index) in filteredChapterList" :key="item.id">
-            <ion-label v-if="chapterIndexProgress.includes(index)" @click="onStartReading(index)" style="color: gray;">{{ item.name }}</ion-label>
-            <ion-label v-else @click="onStartReading(index)">{{ item.name }}</ion-label>
+          <ion-item button :detail="true" v-for="item of filteredChapterListDisplay" :key="item.index">
+            <ion-label v-if="chapterIndexProgress.includes(item.index)" @click="onStartReading(item.index)" style="color: gray;">{{ item.name }}</ion-label>
+            <ion-label v-else @click="onStartReading(item.index)">{{ item.name }}</ion-label>
           </ion-item>
         </ion-list>
       </div>
@@ -112,6 +112,7 @@ export default defineComponent({
       bookOutline,
       comicId,
       getImageLink,
+      store,
     }
   },
   components: {
@@ -136,15 +137,25 @@ export default defineComponent({
   },
   computed: {
     listChapterList() {
-      const sort = store.setting.comic.sort
-      if (sort === 'asc') {
-        return this.chapterList
-      } else {
-        return [...this.chapterList].reverse()
-      }
+      return this.chapterList
     },
     filteredChapterList() {
-      return this.listChapterList.filter(i => this.segmentValue == '-1' || i.type == this.segmentValue)
+      const result = this.listChapterList.filter(i => this.segmentValue == '-1' || i.type == this.segmentValue)
+
+      return result.map((item, index) => {
+        console.log(item, index)
+        return {
+          ...item,
+          index,
+        }
+      })
+    },
+    filteredChapterListDisplay() {
+      if (this.store.setting.comic.sort === 'asc') {
+        return this.filteredChapterList
+      } else {
+        return [...this.filteredChapterList].reverse()
+      }
     },
     inBookshelfList() {
       const list = []

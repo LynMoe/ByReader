@@ -45,7 +45,7 @@ export default defineComponent({
   },
   computed: {
     pageDirection() {
-      return store.setting.reader.mode === 'ltr' ? 'ltr' : 'rtl'
+      return store.setting.reader.direction === 'ltr' ? 'ltr' : 'rtl'
       // return 'rtl'
     },
   },
@@ -290,7 +290,7 @@ export default defineComponent({
         arrowPrev: false,
         arrowNext: false,
         escKey: false,
-        secondaryZoomLevel: 1.2,
+        secondaryZoomLevel: parseFloat(store.setting.reader.zoomLevel),
       })
 
       // remove counter and close btn
