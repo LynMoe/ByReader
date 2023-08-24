@@ -291,6 +291,7 @@ export default defineComponent({
         arrowNext: false,
         escKey: false,
         secondaryZoomLevel: parseFloat(store.setting.reader.zoomLevel),
+        spacing: parseFloat(store.setting.reader.spacing),
       })
 
       // remove counter and close btn

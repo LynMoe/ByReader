@@ -27,6 +27,7 @@ export const store = reactive({
         ],
       },
       zoomLevel: "1.2",
+      spacing: "0",
     },
   },
   user: {

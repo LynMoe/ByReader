@@ -83,6 +83,11 @@ export default defineComponent({
             name: 'Zoom level',
             type: 'input',
             key: 'setting.reader.zoomLevel',
+          },
+          {
+            name: 'Spacing',
+            type: 'input',
+            key: 'setting.reader.spacing',
           }
         ],
       }
