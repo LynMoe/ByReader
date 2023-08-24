@@ -12,7 +12,7 @@ export const store = reactive({
       sort: 'asc',
     },
     reader: {
-      mode: 'vertical',
+      mode: 'ltr', // rtl, ltr, vertical
       touchZone: {
         left: [
           [0, 0, 0.3, 1],

@@ -43,6 +43,12 @@ export default defineComponent({
       getImageLink,
     }
   },
+  computed: {
+    pageDirection() {
+      return store.setting.reader.mode === 'ltr' ? 'ltr' : 'rtl'
+      // return 'rtl'
+    },
+  },
   data() {
     return {
       windowHeight: window.innerHeight,
@@ -61,12 +67,24 @@ export default defineComponent({
       slideChapterStartIndex: 0,
       slideChapterId: null,
       slideNowPage: 0,
+      slideCacheData: {
+        slideIndex: -1,
+        slideStartIndex: -1,
+      },
     }
   },
   watch: {
     imageIndex() {
       if (!this.ready || this.slideNowPage === this.imageIndex) return
-      this.lightbox.pswp.goTo(this.slideChapterStartIndex + this.imageIndex)
+
+      let pageIndex
+      if (this.pageDirection === 'ltr') {
+        pageIndex = this.slideChapterStartIndex + this.imageIndex
+      } else {
+        pageIndex = this.slideChapterStartIndex - this.imageIndex
+      }
+
+      this.lightbox.pswp.goTo(pageIndex)
     },
     // for external change
     chapterIndex: {
@@ -90,7 +108,12 @@ export default defineComponent({
       this.windowWidth = window.innerWidth
     },
     slideChange(slideActivateIndex) {
-      let slideNowPage = slideActivateIndex - this.slideChapterStartIndex
+      // 加载章节并给lightbox添加并goTo到新页面后，lightbox会有延迟更新nowslide，导致slideChange被以错误的参数调用一次
+      if (this.slideCacheData.slideIndex === slideActivateIndex && this.slideCacheData.slideActivateIndex !== this.slideChapterStartIndex) return
+      this.slideCacheData.slideIndex = slideActivateIndex
+      this.slideCacheData.slideActivateIndex = this.slideChapterStartIndex
+
+      let slideNowPage = this.pageDirection === 'ltr' ? slideActivateIndex - this.slideChapterStartIndex : this.slideChapterStartIndex - slideActivateIndex
       this.slideNowPage = slideNowPage
       this.$emit('update:imageIndex', slideNowPage)
 
@@ -104,21 +127,34 @@ export default defineComponent({
       let prevChapter = this.chapterList[chapterIndex - 1]
 
       if ((slideNowPage === -1) || slideNowPage >= chapterImageLength) {
-        const nextOrPrev = slideNowPage < 0 ? 'prev' : 'next'
+        let nextOrPrev
+        if ((slideNowPage === -1)) {
+          nextOrPrev = 'prev'
+        } else {
+          nextOrPrev = 'next'
+        }
         nextOrPrev === 'prev' ? chapterIndex-- : chapterIndex++
         this.$emit('update:chapterIndex', chapterIndex)
         this.slideChapterId = this.chapterList[chapterIndex].id
 
-        if (nextOrPrev === 'prev') {
+        if (nextOrPrev === 'prev' && this.pageDirection === 'ltr') {
           chapterImageLength = this.chapterListImageList[this.slideChapterId].length
           this.slideChapterStartIndex = this.slideChapterStartIndex - chapterImageLength
+        } else if (nextOrPrev === 'next' && this.pageDirection === 'ltr') {
+          this.slideChapterStartIndex = this.slideChapterStartIndex + chapterImageLength
+        } else if (nextOrPrev === 'prev' && this.pageDirection === 'rtl') {
+          chapterImageLength = this.chapterListImageList[this.slideChapterId].length
+          this.slideChapterStartIndex = this.slideChapterStartIndex + chapterImageLength
+        } else if (nextOrPrev === 'next' && this.pageDirection === 'rtl') {
+          this.slideChapterStartIndex = this.slideChapterStartIndex - chapterImageLength
         }
-        else this.slideChapterStartIndex = this.slideChapterStartIndex + chapterImageLength
+
 
         chapterImageList = this.chapterListImageList[this.slideChapterId]
         chapterImageLength = chapterImageList.length
 
-        slideNowPage = slideActivateIndex - this.slideChapterStartIndex
+        slideNowPage = this.pageDirection === 'ltr' ? slideActivateIndex - this.slideChapterStartIndex : this.slideChapterStartIndex - slideActivateIndex
+
         this.$emit('update:imageIndex', slideNowPage)
 
         nextChapter = this.chapterList[chapterIndex + 1]
@@ -184,7 +220,7 @@ export default defineComponent({
       this.loadingChapter.add(chapterId)
       return this.getChapterImage(chapterId)
         .then(() => {
-          const result = this.chapterListImageList[chapterId].map((item, index) => {
+          let result = this.chapterListImageList[chapterId].map((item, index) => {
             return {
               chapterImageIndex: index,
               chapterId: chapterId,
@@ -193,15 +229,18 @@ export default defineComponent({
               height: 0,
             }
           })
+          if (this.pageDirection === 'rtl') {
+            result = result.reverse()
+          }
           console.log('loadChapter', direction, result)
 
           // console.log(this.lightbox, this.lightbox.pswp)
           const lb = this.lightbox.pswp || this.lightbox
           const originLength = lb.options.dataSource.length
-          if (direction === 'next') {
+          if ((direction === 'next' && this.pageDirection === 'ltr') || (direction === 'prev' && this.pageDirection === 'rtl')) {
             // Concat new slides to the end and refresh
             lb.options.dataSource = lb.options.dataSource.concat(result)
-            
+
             console.log('next load concat', originLength, lb.options.dataSource.length)
             setTimeout(() => {
               for (let i = originLength; i < lb.options.dataSource.length; i++) {
@@ -209,17 +248,18 @@ export default defineComponent({
               }
             }, 1)
           } else {
+            lb.options.dataSource = result.concat(lb.options.dataSource)
+
+            console.log('prev load concat', originLength, this.slideChapterStartIndex, lb.currSlide, result.length, lb.options.dataSource.length)
+
+            if (this.slideChapterStartIndex === 0 && this.pageDirection === 'rtl') this.slideChapterStartIndex--
+            this.slideChapterStartIndex = this.slideChapterStartIndex + result.length
+
             setTimeout(() => {
-              lb.options.dataSource = result.concat(lb.options.dataSource)
-
-              console.log('prev load concat', originLength, this.slideChapterStartIndex, lb.currSlide.index, result.length, lb.options.dataSource.length)
-              this.slideChapterStartIndex = this.slideChapterStartIndex + result.length
-              
               for (let i = 0; i < lb.options.dataSource.length; i++) {
-                lb.refreshSlideContent(i)
+                lb.refreshSlideContent && lb.refreshSlideContent(i)
               }
-
-              lb.goTo(lb.currSlide.index + result.length)
+              lb.currSlide && lb.goTo(lb.currSlide.index + result.length)
             }, 500)
           }
           console.log('loadChapter', lb.options.dataSource.length, lb.options.dataSource)
@@ -249,7 +289,8 @@ export default defineComponent({
         wheelToZoom: true,
         arrowPrev: false,
         arrowNext: false,
-        secondaryZoomLevel: 0.75,
+        escKey: false,
+        secondaryZoomLevel: 1.2,
       })
 
       // remove counter and close btn
@@ -262,18 +303,9 @@ export default defineComponent({
 
       // dyncamic load image size
       lightbox.on('contentLoadImage', ({ content }) => {
-        // console.log(content)
         const item = content.data
         if (item.width < 1 || item.height < 1) {
           console.log('load image for', item.src, content.index)
-          // content.element.addEventListener('load', (e) => {
-          //   console.log(content.element, e)
-          //   item.width = (content.element as HTMLImageElement).width || 600
-          //   item.height = (content.element as HTMLImageElement).height || 600
-          //   console.log('image loaded', item)
-          //   this.lightbox.pswp.refreshSlideContent(content.index)
-          // })
-          
           const img = new Image()
           img.onload = () => {
             item.width = img.width
@@ -304,7 +336,6 @@ export default defineComponent({
         this.chapterIdIndexMap[item.id] = index
       }
 
-      // this.lightbox.pswp && this.lightbox.pswp.options.dataSource = []
       this.loadedChapter.clear()
       this.loadingChapter.clear()
 
@@ -314,7 +345,12 @@ export default defineComponent({
         this.ready = true
         this.slideChapterId = chapterId
         this.$emit('readyChange', true)
-        this.lightbox.loadAndOpen(0)
+
+        if (this.pageDirection === 'rtl') {
+          this.lightbox.loadAndOpen(this.chapterListImageList[chapterId].length - 1)
+        } else {
+          this.lightbox.loadAndOpen(0)
+        }
       })
     },
   },
@@ -352,6 +388,7 @@ export default defineComponent({
     top: max(0, env(safe-area-inset-top));
   }
 }
+
 .pswp__preloader {
   position: absolute;
   right: 0;
@@ -364,6 +401,6 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* or any other value */
+  height: 100vh;
 }
 </style>
